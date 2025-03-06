@@ -49,11 +49,10 @@ namespace Infrastructure.Repositories
                 return Task.FromResult(false);
             }
             budgetRecordToUpdate.Name = budgetRecord.Name;
+            budgetRecordToUpdate.CreationDate = budgetRecord.CreationDate;
             budgetRecordToUpdate.SpendingDate = budgetRecord.SpendingDate;
-            budgetRecordToUpdate.IsPositive = budgetRecord.IsPositive;
             budgetRecordToUpdate.Total = budgetRecord.Total;
             budgetRecordToUpdate.Comment = budgetRecord.Comment;
-            budgetRecordToUpdate.Priority = budgetRecord.Priority;
 
             return Task.FromResult(true);
         }

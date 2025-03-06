@@ -51,8 +51,6 @@ namespace Infrastructure.Repositories
             budgetResultToUpdate.BudgetId = budgetResult.BudgetId;
             budgetResultToUpdate.Budget = budgetResult.Budget;
             budgetResultToUpdate.TotalProfit = budgetResult.TotalProfit;
-            budgetResultToUpdate.Surplus = budgetResult.Surplus;
-            budgetResultToUpdate.GoingPositive = budgetResult.GoingPositive;
 
             return Task.FromResult(true);
         }

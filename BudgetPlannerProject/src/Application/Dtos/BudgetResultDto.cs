@@ -12,7 +12,5 @@ namespace Application.Dtos
         public int BudgetId { get; set; }
         public BudgetDto Budget { get; set; }
         public double TotalProfit { get; set; }
-        public double Surplus { get; set; }
-        public bool GoingPositive { get; set; }
     }
 }

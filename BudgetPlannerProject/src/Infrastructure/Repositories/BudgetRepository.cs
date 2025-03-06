@@ -53,7 +53,6 @@ namespace Infrastructure.Repositories
             budgetToUpdate.FinishDate = budget.FinishDate;
             budgetToUpdate.BudgetRecords = budget.BudgetRecords;
             budgetToUpdate.Description = budget.Description;
-            budgetToUpdate.CreatorId = budget.CreatorId;
             budgetToUpdate.Creator = budget.Creator;
 
             return Task.FromResult(true);
