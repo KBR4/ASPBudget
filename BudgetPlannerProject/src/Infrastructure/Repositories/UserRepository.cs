@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Bogus;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,15 @@ namespace Infrastructure.Repositories
         public UserRepository()
         {
 
+        }
+        private void PopulateTestData()
+        {
+            var faker = new Faker();
+            users = new List<User>();
+            for (int i = 0; i < 10; i++)
+            {
+
+            }
         }
         public Task Create(User user)
         {

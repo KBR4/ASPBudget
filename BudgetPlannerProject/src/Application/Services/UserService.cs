@@ -5,39 +5,52 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using Domain.Entities;
 
 namespace Application.Services
 {
     public class UserService : IUserService
     {
         private IUserRepository userRepository;
-        public UserService(IUserRepository userRepository)
+        private IMapper mapper;
+        public UserService(IUserRepository userRepository, IMapper mapper)
         {
             this.userRepository = userRepository;
+            this.mapper = mapper;
         }
-        public Task Add(UserDto user)
+        public async Task Add(UserDto user)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> Delete(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<UserDto>> GetAll()
-        {
-            throw new NotImplementedException();
+            var mappedUser = mapper.Map<User>(user);
+            if (mappedUser != null)
+            {
+                await userRepository.Create(mappedUser);
+            }
         }
 
-        public Task<UserDto?> GetById(int id)
+        public async Task<bool> Delete(int id)
         {
-            throw new NotImplementedException();
+            return await userRepository.Delete(id);
         }
 
-        public Task<bool> Update(UserDto user)
+        public async Task<List<UserDto>> GetAll()
         {
-            throw new NotImplementedException();
+            var users = await userRepository.ReadAll();
+            var mappedUsers = users.Select(q => mapper.Map<UserDto>(q)).ToList();
+            return mappedUsers;
+        }
+
+        public async Task<UserDto?> GetById(int id)
+        {
+            var user = await userRepository.ReadById(id);
+            var mappedUser = mapper.Map<UserDto>(user);
+            return mappedUser;
+        }
+
+        public async Task<bool> Update(UserDto user)
+        {
+            var mappedUser = mapper.Map<User>(user);
+            return await userRepository.Update(mappedUser);
         }
     }
 }

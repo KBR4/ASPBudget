@@ -1,4 +1,6 @@
 ﻿using Application.Dtos;
+using AutoMapper;
+using Domain.Entities;
 using Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
@@ -11,33 +13,44 @@ namespace Application.Services
     public class BudgetResultService : IBudgetResultService
     {
         private IBudgetResultRepository budgetResultRepository;
-        public BudgetResultService(IBudgetResultRepository budgetResultRepository)
+        private IMapper mapper;
+        public BudgetResultService(IBudgetResultRepository budgetResultRepository, IMapper mapper)
         {
             this.budgetResultRepository = budgetResultRepository;
+            this.mapper = mapper;
         }
-        public Task Add(BudgetResultDto budgetResult)
+        public async Task Add(BudgetResultDto budgetResult)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> Delete(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<BudgetResultDto>> GetAll()
-        {
-            throw new NotImplementedException();
+            var mappedbudgetResult = mapper.Map<BudgetResult>(budgetResult);
+            if (mappedbudgetResult != null)
+            {
+                await budgetResultRepository.Create(mappedbudgetResult);
+            }
         }
 
-        public Task<BudgetResultDto?> GetById(int id)
+        public async Task<bool> Delete(int id)
         {
-            throw new NotImplementedException();
+            return await budgetResultRepository.Delete(id);
         }
 
-        public Task<bool> Update(BudgetResultDto budgetResult)
+        public async Task<List<BudgetResultDto>> GetAll()
         {
-            throw new NotImplementedException();
+            var budgetResults = await budgetResultRepository.ReadAll();
+            var mappedbudgetResults = budgetResults.Select(q => mapper.Map<BudgetResultDto>(q)).ToList();
+            return mappedbudgetResults;
+        }
+
+        public async Task<BudgetResultDto?> GetById(int id)
+        {
+            var budgetResult = await budgetResultRepository.ReadById(id);
+            var mappedbudgetResult = mapper.Map<BudgetResultDto>(budgetResult);
+            return mappedbudgetResult;
+        }
+
+        public async Task<bool> Update(BudgetResultDto budgetResult)
+        {
+            var mappedbudgetResult = mapper.Map<BudgetResult>(budgetResult);
+            return await budgetResultRepository.Update(mappedbudgetResult);
         }
     }
 }
