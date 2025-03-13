@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Application.Dtos;
 using Application.Services;
+using Domain.Entities;
 
 namespace Api.Controllers
 {
@@ -8,44 +9,60 @@ namespace Api.Controllers
     [Route("[controller]")]
     public class budgetResultController : ControllerBase
     {
-        private IBudgetResultService budgetResultService;
+        private IBudgetResultService _budgetResultService;
         public budgetResultController(IBudgetResultService budgetResultService)
         {
-            this.budgetResultService = budgetResultService;
+            this._budgetResultService = budgetResultService;
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById([FromQuery] int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var budgetResult = await budgetResultService.GetById(id);
+            var budgetResult = await _budgetResultService.GetById(id);
+            if (budgetResult == null)
+            {
+                return NotFound();
+            }
             return Ok(budgetResult);
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var budgetResultzes = await budgetResultService.GetAll();
+            var budgetResultzes = await _budgetResultService.GetAll();
             return Ok(budgetResultzes);
         }
 
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] BudgetResultDto budgetResult)
         {
-            await budgetResultService.Add(budgetResult);
-            return Created();
+            if (budgetResult == null)
+            {
+                return NotFound();
+            }
+            await _budgetResultService.Add(budgetResult);
+            return Ok(budgetResult.Id);
         }
 
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] BudgetResultDto budgetResult)
         {
-            var result = await budgetResultService.Update(budgetResult);
+            var result = await _budgetResultService.Update(budgetResult);
+            if (!result)
+            {
+                return NotFound();
+            }
             return Ok(result);
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete([FromQuery] int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            var result = await budgetResultService.Delete(id);
-            return Ok(result);
+            var result = await _budgetResultService.Delete(id);
+            if (!result)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
     }
 }

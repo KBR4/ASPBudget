@@ -10,50 +10,57 @@ namespace Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private List<User> users = new List<User>();
+        private List<User> _users = new List<User>();
         public UserRepository()
         {
-
+            PopulateTestData();
         }
         private void PopulateTestData()
         {
             var faker = new Faker();
-            users = new List<User>();
+            _users = new List<User>();
             for (int i = 0; i < 10; i++)
             {
-
+                var user = new User();
+                user.Id = i + 1;
+                user.LastName = faker.Person.LastName;
+                user.FirstName = faker.Person.FirstName;
+                user.Email = faker.Person.Email;
+                List<Budget> budgets = new List<Budget>();
+                user.BudgetPlans = budgets;
+                _users.Add(user);
             }
         }
-        public Task Create(User user)
+        public Task<int> Create(User user)
         {
-            users.Add(user);
-            return Task.CompletedTask;
+            _users.Add(user);
+            return Task.FromResult(user.Id);
         }
 
         public Task<bool> Delete(int id)
         {
-            if (users.Any(x => x.Id == id))
+            if (_users.Any(x => x.Id == id))
             {
                 return Task.FromResult(false);
             }
-            users.RemoveAll(x => x.Id == id);
+            _users.RemoveAll(x => x.Id == id);
             return Task.FromResult(true);
         }
 
         public Task<List<User>> ReadAll()
         {
-            return Task.FromResult(users);
+            return Task.FromResult(_users);
         }
 
         public Task<User?> ReadById(int id)
         {
-            var user = users.Find(x => x.Id == id);
+            var user = _users.Find(x => x.Id == id);
             return Task.FromResult(user);
         }
 
         public Task<bool> Update(User user)
         {
-            var userToUpdate = users.Find(x => x.Id == user.Id);
+            var userToUpdate = _users.Find(x => x.Id == user.Id);
             if (userToUpdate == null)
             {
                 return Task.FromResult(false);

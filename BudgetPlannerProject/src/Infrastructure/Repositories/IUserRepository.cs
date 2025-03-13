@@ -11,7 +11,7 @@ namespace Infrastructure.Repositories
     {
         public Task<User?> ReadById(int id);
         public Task<List<User>> ReadAll();
-        public Task Create(User user);
+        public Task<int> Create(User user);
         public Task<bool> Update(User user);
         public Task<bool> Delete(int id);
     }

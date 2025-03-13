@@ -11,7 +11,7 @@ namespace Application.Services
     {
         public Task<BudgetDto?> GetById(int id);
         public Task<List<BudgetDto>> GetAll();
-        public Task Add(BudgetDto budget);
+        public Task<int> Add(BudgetDto budget);
         public Task<bool> Update(BudgetDto budget);
         public Task<bool> Delete(int id);
     }

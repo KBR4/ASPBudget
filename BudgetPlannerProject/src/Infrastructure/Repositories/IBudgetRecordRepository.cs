@@ -11,7 +11,7 @@ namespace Infrastructure.Repositories
     {
         public Task<BudgetRecord?> ReadById(int id);
         public Task<List<BudgetRecord>> ReadAll();
-        public Task Create(BudgetRecord budgetRecord);
+        public Task<int> Create(BudgetRecord budgetRecord);
         public Task<bool> Update(BudgetRecord budgetRecord);
         public Task<bool> Delete(int id);
     }

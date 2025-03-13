@@ -10,7 +10,7 @@ namespace Infrastructure.Repositories
 {
     public class BudgetRepository : IBudgetRepository
     {
-        private List<Budget> budgets = new List<Budget>();
+        private List<Budget> _budgets = new List<Budget>();
         public BudgetRepository()
         {
             PopulateTestData();
@@ -18,7 +18,7 @@ namespace Infrastructure.Repositories
         private void PopulateTestData()
         {
             var faker = new Faker();
-            budgets = new List<Budget>();
+            _budgets = new List<Budget>();
             for (int i = 0; i < 10; i++)
             {
                 var budget = new Budget();
@@ -30,45 +30,45 @@ namespace Infrastructure.Repositories
                 budget.BudgetRecords = new List<BudgetRecord>();
                 var creator = new User()
                 {
-                    Id = i*i + 1,
+                    Id = i + 1,
                     FirstName = faker.Person.FirstName,
                     LastName = faker.Person.LastName,
                     Email = faker.Person.Email,
                     BudgetPlans = new List<Budget>() { budget }
                 };
-
+                _budgets.Add(budget);
             }
         }
-        public Task Create(Budget budget)
+        public Task<int> Create(Budget budget)
         {
-            budgets.Add(budget);
-            return Task.CompletedTask;
+            _budgets.Add(budget);
+            return Task.FromResult(budget.Id);
         }
 
         public Task<bool> Delete(int id)
         {
-            if (budgets.Any(x => x.Id == id))
+            if (_budgets.Any(x => x.Id == id))
             {
                 return Task.FromResult(false);
             }
-            budgets.RemoveAll(x => x.Id == id);
+            _budgets.RemoveAll(x => x.Id == id);
             return Task.FromResult(true);
         }
 
         public Task<List<Budget>> ReadAll()
         {
-            return Task.FromResult(budgets);
+            return Task.FromResult(_budgets);
         }
 
         public Task<Budget?> ReadById(int id)
         {
-            var budget = budgets.Find(x => x.Id == id);
+            var budget = _budgets.Find(x => x.Id == id);
             return Task.FromResult(budget);
         }
 
         public Task<bool> Update(Budget budget)
         {
-            var budgetToUpdate = budgets.Find(x => x.Id == budget.Id);
+            var budgetToUpdate = _budgets.Find(x => x.Id == budget.Id);
             if (budgetToUpdate == null)
             {
                 return Task.FromResult(false);

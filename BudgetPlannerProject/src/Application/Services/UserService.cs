@@ -12,37 +12,38 @@ namespace Application.Services
 {
     public class UserService : IUserService
     {
-        private IUserRepository userRepository;
+        private IUserRepository _userRepository;
         private IMapper mapper;
         public UserService(IUserRepository userRepository, IMapper mapper)
         {
-            this.userRepository = userRepository;
+            this._userRepository = userRepository;
             this.mapper = mapper;
         }
-        public async Task Add(UserDto user)
+        public async Task<int> Add(UserDto user)
         {
             var mappedUser = mapper.Map<User>(user);
             if (mappedUser != null)
             {
-                await userRepository.Create(mappedUser);
+                await _userRepository.Create(mappedUser);
             }
+            return -1;
         }
 
         public async Task<bool> Delete(int id)
         {
-            return await userRepository.Delete(id);
+            return await _userRepository.Delete(id);
         }
 
         public async Task<List<UserDto>> GetAll()
         {
-            var users = await userRepository.ReadAll();
+            var users = await _userRepository.ReadAll();
             var mappedUsers = users.Select(q => mapper.Map<UserDto>(q)).ToList();
             return mappedUsers;
         }
 
         public async Task<UserDto?> GetById(int id)
         {
-            var user = await userRepository.ReadById(id);
+            var user = await _userRepository.ReadById(id);
             var mappedUser = mapper.Map<UserDto>(user);
             return mappedUser;
         }
@@ -50,7 +51,7 @@ namespace Application.Services
         public async Task<bool> Update(UserDto user)
         {
             var mappedUser = mapper.Map<User>(user);
-            return await userRepository.Update(mappedUser);
+            return await _userRepository.Update(mappedUser);
         }
     }
 }
