@@ -17,6 +17,5 @@ namespace Application.Dtos
         public string Description { get; set; }
         public UserDto Creator { get; set; }
         public List<UserDto> Managers { get; set; } = new List<UserDto>();
-
     }
 }

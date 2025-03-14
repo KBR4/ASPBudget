@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Bogus;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,41 +10,59 @@ namespace Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private List<User> users = new List<User>();
+        private List<User> _users = new List<User>();
+
         public UserRepository()
         {
-
+            PopulateTestData();
         }
-        public Task Create(User user)
+
+        private void PopulateTestData()
         {
-            users.Add(user);
-            return Task.CompletedTask;
+            var faker = new Faker();
+            for (int i = 0; i < 10; i++)
+            {
+                var user = new User();
+                user.Id = i + 1;
+                user.LastName = faker.Person.LastName;
+                user.FirstName = faker.Person.FirstName;
+                user.Email = faker.Person.Email;
+                List<Budget> budgets = new List<Budget>();
+                user.BudgetPlans = budgets;
+                _users.Add(user);
+            }
+        }
+
+        public Task<int> Create(User user)
+        {
+            _users.Add(user);
+            return Task.FromResult(user.Id);
         }
 
         public Task<bool> Delete(int id)
         {
-            if (users.Any(x => x.Id == id))
+            if (!_users.Any(x => x.Id == id))
             {
                 return Task.FromResult(false);
             }
-            users.RemoveAll(x => x.Id == id);
+            _users.RemoveAll(x => x.Id == id);
             return Task.FromResult(true);
         }
 
-        public Task<List<User>> ReadAll()
+        public Task<IEnumerable<User>> ReadAll()
         {
-            return Task.FromResult(users);
+            return Task.FromResult<IEnumerable<User>>(_users);
         }
 
         public Task<User?> ReadById(int id)
         {
-            var user = users.Find(x => x.Id == id);
+            var user = _users.Find(x => x.Id == id);
             return Task.FromResult(user);
         }
 
         public Task<bool> Update(User user)
         {
-            var userToUpdate = users.Find(x => x.Id == user.Id);
+            var userToUpdate = _users.Find(x => x.Id == user.Id);
             if (userToUpdate == null)
             {
                 return Task.FromResult(false);
@@ -52,7 +71,6 @@ namespace Infrastructure.Repositories
             userToUpdate.FirstName = user.FirstName;
             userToUpdate.Email = user.Email;
             userToUpdate.BudgetPlans = user.BudgetPlans;
-
             return Task.FromResult(true);
         }
     }
