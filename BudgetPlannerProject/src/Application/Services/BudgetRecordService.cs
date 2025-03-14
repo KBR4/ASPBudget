@@ -13,18 +13,20 @@ namespace Application.Services
     public class BudgetRecordService : IBudgetRecordService
     {
         private IBudgetRecordRepository _budgetRecordRepository;
-        private IMapper mapper;
+        private IMapper _mapper;
+
         public BudgetRecordService(IBudgetRecordRepository budgetRecordRepository, IMapper mapper)
         {
-            this._budgetRecordRepository = budgetRecordRepository;
-            this.mapper = mapper;
+            _budgetRecordRepository = budgetRecordRepository;
+            _mapper = mapper;
         }
+
         public async Task<int> Add(BudgetRecordDto budgetRecord)
         {
-            var mappedbudgetRecord = mapper.Map<BudgetRecord>(budgetRecord);
-            if (mappedbudgetRecord != null)
+            var mappedBudgetRecord = _mapper.Map<BudgetRecord>(budgetRecord);
+            if (mappedBudgetRecord != null)
             {
-                await _budgetRecordRepository.Create(mappedbudgetRecord);
+                await _budgetRecordRepository.Create(mappedBudgetRecord);
             }
             return -1;
         }
@@ -37,21 +39,25 @@ namespace Application.Services
         public async Task<List<BudgetRecordDto>> GetAll()
         {
             var budgetRecords = await _budgetRecordRepository.ReadAll();
-            var mappedbudgetRecords = budgetRecords.Select(q => mapper.Map<BudgetRecordDto>(q)).ToList();
-            return mappedbudgetRecords;
+            var mappedBudgetRecords = budgetRecords.Select(q => _mapper.Map<BudgetRecordDto>(q)).ToList();
+            return mappedBudgetRecords;
         }
 
         public async Task<BudgetRecordDto?> GetById(int id)
         {
             var budgetRecord = await _budgetRecordRepository.ReadById(id);
-            var mappedbudgetRecord = mapper.Map<BudgetRecordDto>(budgetRecord);
-            return mappedbudgetRecord;
+            var mappedBudgetRecord = _mapper.Map<BudgetRecordDto>(budgetRecord);
+            return mappedBudgetRecord;
         }
 
         public async Task<bool> Update(BudgetRecordDto budgetRecord)
         {
-            var mappedbudgetRecord = mapper.Map<BudgetRecord>(budgetRecord);
-            return await _budgetRecordRepository.Update(mappedbudgetRecord);
+            if (budgetRecord == null)
+            {
+                return false;
+            }
+            var mappedBudgetRecord = _mapper.Map<BudgetRecord>(budgetRecord);
+            return await _budgetRecordRepository.Update(mappedBudgetRecord);
         }
     }
 }

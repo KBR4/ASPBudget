@@ -6,12 +6,13 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class userController : ControllerBase
+    public class UserController : ControllerBase
     {
-        private IUserService _userService;
-        public userController(IUserService userService)
+        private readonly IUserService _userService;
+
+        public UserController(IUserService userService)
         {
-            this._userService = userService;
+            _userService = userService;
         }
 
         [HttpGet("{id}")]
@@ -24,22 +25,24 @@ namespace Api.Controllers
             }
             return Ok(user);
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var userzes = await _userService.GetAll();
-            return Ok(userzes);
+            var users = await _userService.GetAll();
+            return Ok(users);
         }
 
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] UserDto user)
         {
-            if (user == null)
+            if (!ModelState.IsValid)
             {
-                return NotFound();
+                return BadRequest(ModelState);
             }
-            await _userService.Add(user);
-            return Ok(user.Id);
+            var userId = await _userService.Add(user);
+            var res = new { Id = userId };
+            return CreatedAtAction(nameof(GetById), new { id = userId }, res);
         }
 
         [HttpPut]
@@ -65,5 +68,3 @@ namespace Api.Controllers
         }
     }
 }
-
-

@@ -11,14 +11,15 @@ namespace Infrastructure.Repositories
     public class BudgetRepository : IBudgetRepository
     {
         private List<Budget> _budgets = new List<Budget>();
+
         public BudgetRepository()
         {
             PopulateTestData();
         }
+
         private void PopulateTestData()
         {
             var faker = new Faker();
-            _budgets = new List<Budget>();
             for (int i = 0; i < 10; i++)
             {
                 var budget = new Budget();
@@ -39,6 +40,7 @@ namespace Infrastructure.Repositories
                 _budgets.Add(budget);
             }
         }
+
         public Task<int> Create(Budget budget)
         {
             _budgets.Add(budget);
@@ -47,7 +49,7 @@ namespace Infrastructure.Repositories
 
         public Task<bool> Delete(int id)
         {
-            if (_budgets.Any(x => x.Id == id))
+            if (!_budgets.Any(x => x.Id == id))
             {
                 return Task.FromResult(false);
             }
@@ -55,9 +57,9 @@ namespace Infrastructure.Repositories
             return Task.FromResult(true);
         }
 
-        public Task<List<Budget>> ReadAll()
+        public Task<IEnumerable<Budget>> ReadAll()
         {
-            return Task.FromResult(_budgets);
+            return Task.FromResult<IEnumerable<Budget>>(_budgets);
         }
 
         public Task<Budget?> ReadById(int id)
@@ -79,7 +81,6 @@ namespace Infrastructure.Repositories
             budgetToUpdate.BudgetRecords = budget.BudgetRecords;
             budgetToUpdate.Description = budget.Description;
             budgetToUpdate.Creator = budget.Creator;
-
             return Task.FromResult(true);
         }
     }

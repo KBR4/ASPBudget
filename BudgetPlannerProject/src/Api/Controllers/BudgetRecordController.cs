@@ -1,18 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Application.Dtos;
 using Application.Services;
-using Domain.Entities;
 
 namespace Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class budgetRecordController : ControllerBase
+    public class BudgetRecordController : ControllerBase
     {
-        private IBudgetRecordService _budgetRecordService;
-        public budgetRecordController(IBudgetRecordService budgetRecordService)
+        private readonly IBudgetRecordService _budgetRecordService;
+
+        public BudgetRecordController(IBudgetRecordService budgetRecordService)
         {
-            this._budgetRecordService = budgetRecordService;
+            _budgetRecordService = budgetRecordService;
         }
 
         [HttpGet("{id}")]
@@ -25,22 +25,24 @@ namespace Api.Controllers
             }
             return Ok(budgetRecord);
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var budgetRecordzes = await _budgetRecordService.GetAll();
-            return Ok(budgetRecordzes);
+            var budgetRecords = await _budgetRecordService.GetAll();
+            return Ok(budgetRecords);
         }
 
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] BudgetRecordDto budgetRecord)
         {
-            if (budgetRecord == null)
+            if (!ModelState.IsValid)
             {
-                return NotFound();
+                return BadRequest(ModelState);
             }
-            await _budgetRecordService.Add(budgetRecord);
-            return Ok(budgetRecord.Id);
+            var budgetRecordId = await _budgetRecordService.Add(budgetRecord);
+            var res = new { Id = budgetRecordId };
+            return CreatedAtAction(nameof(GetById), new { id = budgetRecordId }, res);
         }
 
         [HttpPut]
@@ -66,6 +68,3 @@ namespace Api.Controllers
         }
     }
 }
-
-
-

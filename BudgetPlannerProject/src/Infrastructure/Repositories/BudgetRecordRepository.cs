@@ -11,15 +11,16 @@ namespace Infrastructure.Repositories
     public class BudgetRecordRepository : IBudgetRecordRepository
     {
         private List<BudgetRecord> _budgetRecords = new List<BudgetRecord>();
+
         public BudgetRecordRepository()
         {
             PopulateTestData();
         }
+
         private void PopulateTestData()
         {
             var faker = new Faker();
-            _budgetRecords = new List<BudgetRecord>();
-            for (int i = 0; i<10; i++)
+            for (int i = 0; i < 10; i++)
             {
                 var budgetRecord = new BudgetRecord();
                 budgetRecord.Id = i + 1;
@@ -31,6 +32,7 @@ namespace Infrastructure.Repositories
                 _budgetRecords.Add(budgetRecord);
             }
         }
+
         public Task<int> Create(BudgetRecord budgetRecord)
         {
             _budgetRecords.Add(budgetRecord);
@@ -39,7 +41,7 @@ namespace Infrastructure.Repositories
 
         public Task<bool> Delete(int id)
         {
-            if (_budgetRecords.Any(x => x.Id == id))
+            if (!_budgetRecords.Any(x => x.Id == id))
             {
                 return Task.FromResult(false);
             }
@@ -47,9 +49,9 @@ namespace Infrastructure.Repositories
             return Task.FromResult(true);
         }
 
-        public Task<List<BudgetRecord>> ReadAll()
+        public Task<IEnumerable<BudgetRecord>> ReadAll()
         {
-            return Task.FromResult(_budgetRecords);
+            return Task.FromResult<IEnumerable<BudgetRecord>>(_budgetRecords);
         }
 
         public Task<BudgetRecord?> ReadById(int id)
@@ -70,7 +72,6 @@ namespace Infrastructure.Repositories
             budgetRecordToUpdate.SpendingDate = budgetRecord.SpendingDate;
             budgetRecordToUpdate.Total = budgetRecord.Total;
             budgetRecordToUpdate.Comment = budgetRecord.Comment;
-
             return Task.FromResult(true);
         }
     }

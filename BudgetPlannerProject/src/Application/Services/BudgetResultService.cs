@@ -13,18 +13,20 @@ namespace Application.Services
     public class BudgetResultService : IBudgetResultService
     {
         private IBudgetResultRepository _budgetResultRepository;
-        private IMapper mapper;
+        private IMapper _mapper;
+
         public BudgetResultService(IBudgetResultRepository budgetResultRepository, IMapper mapper)
         {
-            this._budgetResultRepository = budgetResultRepository;
-            this.mapper = mapper;
+            _budgetResultRepository = budgetResultRepository;
+            _mapper = mapper;
         }
+
         public async Task<int> Add(BudgetResultDto budgetResult)
         {
-            var mappedbudgetResult = mapper.Map<BudgetResult>(budgetResult);
-            if (mappedbudgetResult != null)
+            var mappedBudgetResult = _mapper.Map<BudgetResult>(budgetResult);
+            if (mappedBudgetResult != null)
             {
-                await _budgetResultRepository.Create(mappedbudgetResult);
+                await _budgetResultRepository.Create(mappedBudgetResult);
             }
             return -1;
         }
@@ -37,21 +39,25 @@ namespace Application.Services
         public async Task<List<BudgetResultDto>> GetAll()
         {
             var budgetResults = await _budgetResultRepository.ReadAll();
-            var mappedbudgetResults = budgetResults.Select(q => mapper.Map<BudgetResultDto>(q)).ToList();
-            return mappedbudgetResults;
+            var mappedBudgetResults = budgetResults.Select(q => _mapper.Map<BudgetResultDto>(q)).ToList();
+            return mappedBudgetResults;
         }
 
         public async Task<BudgetResultDto?> GetById(int id)
         {
             var budgetResult = await _budgetResultRepository.ReadById(id);
-            var mappedbudgetResult = mapper.Map<BudgetResultDto>(budgetResult);
-            return mappedbudgetResult;
+            var mappedBudgetResult = _mapper.Map<BudgetResultDto>(budgetResult);
+            return mappedBudgetResult;
         }
 
         public async Task<bool> Update(BudgetResultDto budgetResult)
         {
-            var mappedbudgetResult = mapper.Map<BudgetResult>(budgetResult);
-            return await _budgetResultRepository.Update(mappedbudgetResult);
+            if (budgetResult == null)
+            {
+                return false;
+            }
+            var mappedBudgetResult = _mapper.Map<BudgetResult>(budgetResult);
+            return await _budgetResultRepository.Update(mappedBudgetResult);
         }
     }
 }

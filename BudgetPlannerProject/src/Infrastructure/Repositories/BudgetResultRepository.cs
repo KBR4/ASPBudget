@@ -11,14 +11,15 @@ namespace Infrastructure.Repositories
     public class BudgetResultRepository : IBudgetResultRepository
     {
         private List<BudgetResult> _budgetResults = new List<BudgetResult>();
+
         public BudgetResultRepository()
         {
             PopulateTestData();
         }
+
         private void PopulateTestData()
         {
             var faker = new Faker();
-            _budgetResults = new List<BudgetResult>();
             for (int i = 0; i < 10; i++)
             {
                 var budgetResult = new BudgetResult();
@@ -30,6 +31,7 @@ namespace Infrastructure.Repositories
                 _budgetResults.Add(budgetResult);
             }
         }
+
         public Task<int> Create(BudgetResult budgetResult)
         {
             _budgetResults.Add(budgetResult);
@@ -38,7 +40,7 @@ namespace Infrastructure.Repositories
 
         public Task<bool> Delete(int id)
         {
-            if (_budgetResults.Any(x => x.Id == id))
+            if (!_budgetResults.Any(x => x.Id == id))
             {
                 return Task.FromResult(false);
             }
@@ -46,9 +48,9 @@ namespace Infrastructure.Repositories
             return Task.FromResult(true);
         }
 
-        public Task<List<BudgetResult>> ReadAll()
+        public Task<IEnumerable<BudgetResult>> ReadAll()
         {
-            return Task.FromResult(_budgetResults);
+            return Task.FromResult<IEnumerable<BudgetResult>>(_budgetResults);
         }
 
         public Task<BudgetResult?> ReadById(int id)
@@ -67,7 +69,6 @@ namespace Infrastructure.Repositories
             budgetResultToUpdate.BudgetId = budgetResult.BudgetId;
             budgetResultToUpdate.Budget = budgetResult.Budget;
             budgetResultToUpdate.TotalProfit = budgetResult.TotalProfit;
-
             return Task.FromResult(true);
         }
     }
