@@ -28,7 +28,6 @@ namespace Infrastructure.Repositories
                 budget.StartDate = faker.Date.Future(2, DateTime.Now);
                 budget.FinishDate = faker.Date.Future(5, budget.StartDate);
                 budget.Description = faker.Rant.Review();
-                budget.BudgetRecords = new List<BudgetRecord>();
                 var creator = new User()
                 {
                     Id = i + 1,
@@ -78,9 +77,8 @@ namespace Infrastructure.Repositories
             budgetToUpdate.Name = budget.Name;
             budgetToUpdate.StartDate = budget.StartDate;
             budgetToUpdate.FinishDate = budget.FinishDate;
-            budgetToUpdate.BudgetRecords = budget.BudgetRecords;
             budgetToUpdate.Description = budget.Description;
-            budgetToUpdate.Creator = budget.Creator;
+            budgetToUpdate.CreatorId = budget.CreatorId;
             return Task.FromResult(true);
         }
     }

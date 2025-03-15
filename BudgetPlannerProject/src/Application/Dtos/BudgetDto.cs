@@ -13,9 +13,7 @@ namespace Application.Dtos
         public string Name { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? FinishDate { get; set; }
-        public List<BudgetRecordDto> BudgetRecords { get; set; }
         public string Description { get; set; }
-        public UserDto Creator { get; set; }
-        public List<UserDto> Managers { get; set; } = new List<UserDto>();
+        public int CreatorId { get; set; }
     }
 }

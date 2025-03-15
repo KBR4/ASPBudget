@@ -30,8 +30,8 @@ namespace Application.Services
             {
                 return -1;
             }
-            var mappedBudget = _mapper.Map<Budget>(budgetResult.Budget);
-            if (mappedBudget == null)
+            var budget = await _budgetRepository.ReadById(budgetResult.BudgetId);
+            if (budget == null)
             {
                 return -1;
             }
@@ -64,8 +64,8 @@ namespace Application.Services
                 return false;
             }
             var mappedBudgetResult = _mapper.Map<BudgetResult>(budgetResult);
-            var mappedBudget = _mapper.Map<Budget>(budgetResult.Budget);
-            if (mappedBudget == null)
+            var budget = await _budgetRepository.ReadById(budgetResult.BudgetId);
+            if (budget == null)
             {
                 return false;
             }

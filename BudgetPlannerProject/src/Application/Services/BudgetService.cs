@@ -30,8 +30,8 @@ namespace Application.Services
             {
                 return -1;
             }
-            var mappedUser = _mapper.Map<User>(budget.Creator);
-            if (mappedUser == null)
+            var user = await _userRepository.ReadById(budget.CreatorId);
+            if (user == null)
             {
                 return -1;
             }
@@ -64,8 +64,8 @@ namespace Application.Services
                 return false;
             }
             var mappedBudget = _mapper.Map<Budget>(budget);
-            var mappedUser = _mapper.Map<User>(budget.Creator);
-            if (mappedUser == null)
+            var user = await _userRepository.ReadById(budget.CreatorId);
+            if (user == null)
             {
                 return false;
             }

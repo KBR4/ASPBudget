@@ -13,12 +13,14 @@ namespace Application.Services
     public class BudgetRecordService : IBudgetRecordService
     {
         private IBudgetRecordRepository _budgetRecordRepository;
+        private IBudgetRepository _budgetRepository;
         private IMapper _mapper;
 
-        public BudgetRecordService(IBudgetRecordRepository budgetRecordRepository, IMapper mapper)
+        public BudgetRecordService(IBudgetRecordRepository budgetRecordRepository, IMapper mapper, IBudgetRepository budgetRepository)
         {
             _budgetRecordRepository = budgetRecordRepository;
             _mapper = mapper;
+            _budgetRepository = budgetRepository;
         }
 
         public async Task<int> Add(BudgetRecordDto budgetRecord)
@@ -27,6 +29,11 @@ namespace Application.Services
             if (mappedBudgetRecord != null)
             {
                 await _budgetRecordRepository.Create(mappedBudgetRecord);
+            }
+            var budget = await _budgetRepository.ReadById(budgetRecord.BudgetId);
+            if (budget == null)
+            {
+                return -1;
             }
             return -1;
         }
@@ -57,6 +64,11 @@ namespace Application.Services
                 return false;
             }
             var mappedBudgetRecord = _mapper.Map<BudgetRecord>(budgetRecord);
+            var budget = await _budgetRepository.ReadById(budgetRecord.BudgetId);
+            if (budget == null)
+            {
+                return false;
+            }
             return await _budgetRecordRepository.Update(mappedBudgetRecord);
         }
     }

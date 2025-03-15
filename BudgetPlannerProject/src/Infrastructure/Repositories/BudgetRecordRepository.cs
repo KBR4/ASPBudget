@@ -70,6 +70,7 @@ namespace Infrastructure.Repositories
             budgetRecordToUpdate.Name = budgetRecord.Name;
             budgetRecordToUpdate.CreationDate = budgetRecord.CreationDate;
             budgetRecordToUpdate.SpendingDate = budgetRecord.SpendingDate;
+            budgetRecordToUpdate.BudgetId = budgetRecord.BudgetId;
             budgetRecordToUpdate.Total = budgetRecord.Total;
             budgetRecordToUpdate.Comment = budgetRecord.Comment;
             return Task.FromResult(true);

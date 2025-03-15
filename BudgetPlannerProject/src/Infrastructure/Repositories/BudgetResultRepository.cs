@@ -26,7 +26,6 @@ namespace Infrastructure.Repositories
                 budgetResult.Id = i + 1;
                 budgetResult.BudgetId = i + 1;
                 var budget = new Budget();
-                budgetResult.Budget = budget;
                 budgetResult.TotalProfit = Convert.ToDouble(faker.Commerce.Price(1, 1000));
                 _budgetResults.Add(budgetResult);
             }
@@ -67,7 +66,6 @@ namespace Infrastructure.Repositories
                 return Task.FromResult(false);
             }
             budgetResultToUpdate.BudgetId = budgetResult.BudgetId;
-            budgetResultToUpdate.Budget = budgetResult.Budget;
             budgetResultToUpdate.TotalProfit = budgetResult.TotalProfit;
             return Task.FromResult(true);
         }
