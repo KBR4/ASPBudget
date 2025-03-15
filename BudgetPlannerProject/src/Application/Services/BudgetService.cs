@@ -13,22 +13,29 @@ namespace Application.Services
     public class BudgetService : IBudgetService
     {
         private IBudgetRepository _budgetRepository;
+        private IUserRepository _userRepository;
         private IMapper _mapper;
 
-        public BudgetService(IBudgetRepository budgetRepository, IMapper mapper)
+        public BudgetService(IBudgetRepository budgetRepository, IMapper mapper, IUserRepository userRepository)
         {
             _budgetRepository = budgetRepository;
             _mapper = mapper;
+            _userRepository = userRepository;
         }
 
         public async Task<int> Add(BudgetDto budget)
         {
             var mappedBudget = _mapper.Map<Budget>(budget);
-            if (mappedBudget != null)
+            if (mappedBudget == null)
             {
-                await _budgetRepository.Create(mappedBudget);
+                return -1;
             }
-            return -1;
+            var mappedUser = _mapper.Map<User>(budget.Creator);
+            if (mappedUser == null)
+            {
+                return -1;
+            }
+            return await _budgetRepository.Create(mappedBudget);
         }
 
         public async Task<bool> Delete(int id)
@@ -57,6 +64,11 @@ namespace Application.Services
                 return false;
             }
             var mappedBudget = _mapper.Map<Budget>(budget);
+            var mappedUser = _mapper.Map<User>(budget.Creator);
+            if (mappedUser == null)
+            {
+                return false;
+            }
             return await _budgetRepository.Update(mappedBudget);
         }
     }

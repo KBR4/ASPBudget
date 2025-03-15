@@ -13,22 +13,29 @@ namespace Application.Services
     public class BudgetResultService : IBudgetResultService
     {
         private IBudgetResultRepository _budgetResultRepository;
+        private IBudgetRepository _budgetRepository;
         private IMapper _mapper;
 
-        public BudgetResultService(IBudgetResultRepository budgetResultRepository, IMapper mapper)
+        public BudgetResultService(IBudgetResultRepository budgetResultRepository, IMapper mapper, IBudgetRepository budgetRepository)
         {
             _budgetResultRepository = budgetResultRepository;
+            _budgetRepository = budgetRepository;
             _mapper = mapper;
         }
 
         public async Task<int> Add(BudgetResultDto budgetResult)
         {
-            var mappedBudgetResult = _mapper.Map<BudgetResult>(budgetResult);
-            if (mappedBudgetResult != null)
+            var mappedBudgetResult = _mapper.Map<BudgetResult>(budgetResult);        
+            if (mappedBudgetResult == null)
             {
-                await _budgetResultRepository.Create(mappedBudgetResult);
+                return -1;
             }
-            return -1;
+            var mappedBudget = _mapper.Map<Budget>(budgetResult.Budget);
+            if (mappedBudget == null)
+            {
+                return -1;
+            }
+            return await _budgetResultRepository.Create(mappedBudgetResult);
         }
 
         public async Task<bool> Delete(int id)
@@ -57,6 +64,11 @@ namespace Application.Services
                 return false;
             }
             var mappedBudgetResult = _mapper.Map<BudgetResult>(budgetResult);
+            var mappedBudget = _mapper.Map<Budget>(budgetResult.Budget);
+            if (mappedBudget == null)
+            {
+                return false;
+            }
             return await _budgetResultRepository.Update(mappedBudgetResult);
         }
     }
