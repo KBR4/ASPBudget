@@ -1,4 +1,6 @@
 ﻿using Application.Dtos;
+using AutoMapper;
+using Domain.Entities;
 using Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
@@ -10,34 +12,64 @@ namespace Application.Services
 {
     public class BudgetRecordService : IBudgetRecordService
     {
-        private IBudgetRecordRepository budgetRecordRepository;
-        public BudgetRecordService(IBudgetRecordRepository budgetRecordRepository)
+        private IBudgetRecordRepository _budgetRecordRepository;
+        private IBudgetRepository _budgetRepository;
+        private IMapper _mapper;
+
+        public BudgetRecordService(IBudgetRecordRepository budgetRecordRepository, IMapper mapper, IBudgetRepository budgetRepository)
         {
-            this.budgetRecordRepository = budgetRecordRepository;
-        }
-        public Task Add(BudgetRecordDto budgetRecord)
-        {
-            throw new NotImplementedException();
+            _budgetRecordRepository = budgetRecordRepository;
+            _mapper = mapper;
+            _budgetRepository = budgetRepository;
         }
 
-        public Task<bool> Delete(int id)
+        public async Task<int> Add(BudgetRecordDto budgetRecord)
         {
-            throw new NotImplementedException();
+            var mappedBudgetRecord = _mapper.Map<BudgetRecord>(budgetRecord);
+            if (mappedBudgetRecord != null)
+            {
+                await _budgetRecordRepository.Create(mappedBudgetRecord);
+            }
+            var budget = await _budgetRepository.ReadById(budgetRecord.BudgetId);
+            if (budget == null)
+            {
+                return -1;
+            }
+            return -1;
         }
 
-        public Task<List<BudgetRecordDto>> GetAll()
+        public async Task<bool> Delete(int id)
         {
-            throw new NotImplementedException();
+            return await _budgetRecordRepository.Delete(id);
         }
 
-        public Task<BudgetRecordDto?> GetById(int id)
+        public async Task<List<BudgetRecordDto>> GetAll()
         {
-            throw new NotImplementedException();
+            var budgetRecords = await _budgetRecordRepository.ReadAll();
+            var mappedBudgetRecords = budgetRecords.Select(q => _mapper.Map<BudgetRecordDto>(q)).ToList();
+            return mappedBudgetRecords;
         }
 
-        public Task<bool> Update(BudgetRecordDto budgetRecord)
+        public async Task<BudgetRecordDto?> GetById(int id)
         {
-            throw new NotImplementedException();
+            var budgetRecord = await _budgetRecordRepository.ReadById(id);
+            var mappedBudgetRecord = _mapper.Map<BudgetRecordDto>(budgetRecord);
+            return mappedBudgetRecord;
+        }
+
+        public async Task<bool> Update(BudgetRecordDto budgetRecord)
+        {
+            if (budgetRecord == null)
+            {
+                return false;
+            }
+            var mappedBudgetRecord = _mapper.Map<BudgetRecord>(budgetRecord);
+            var budget = await _budgetRepository.ReadById(budgetRecord.BudgetId);
+            if (budget == null)
+            {
+                return false;
+            }
+            return await _budgetRecordRepository.Update(mappedBudgetRecord);
         }
     }
 }

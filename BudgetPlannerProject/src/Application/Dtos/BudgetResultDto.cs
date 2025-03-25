@@ -10,7 +10,6 @@ namespace Application.Dtos
     {
         public int Id { get; set; }
         public int BudgetId { get; set; }
-        public BudgetDto Budget { get; set; }
         public double TotalProfit { get; set; }
     }
 }

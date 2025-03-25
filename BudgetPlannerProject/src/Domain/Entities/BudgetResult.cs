@@ -10,7 +10,6 @@ namespace Domain.Entities
     {
         public int Id { get; set; }
         public int BudgetId { get; set; }
-        public Budget Budget { get; set; }
         public double TotalProfit { get; set; }
 
     }

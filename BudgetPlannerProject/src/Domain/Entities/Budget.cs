@@ -13,9 +13,7 @@ namespace Domain.Entities
         public string Name { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? FinishDate { get; set; }
-        public List<BudgetRecord> BudgetRecords { get; set; }
         public string Description { get; set; }
-        public User Creator { get; set; }
-        public List<User> Managers { get; set; } = new List<User>();
+        public int CreatorId { get; set; }
     }
 }
