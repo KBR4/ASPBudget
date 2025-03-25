@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories.BudgetRecordRepository
 {
-    public class BudgetRecordRepository : IBudgetRecordRepository
+    public class BudgetRecordInMemoryRepository : IBudgetRecordRepository
     {
         private List<BudgetRecord> _budgetRecords = new List<BudgetRecord>();
 
-        public BudgetRecordRepository()
+        public BudgetRecordInMemoryRepository()
         {
             PopulateTestData();
         }
