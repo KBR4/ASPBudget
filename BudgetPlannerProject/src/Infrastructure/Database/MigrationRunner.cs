@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentMigrator.Runner;
+﻿using FluentMigrator.Runner;
+
 namespace Infrastructure.Database
 {
     public class MigrationRunner
@@ -16,7 +12,6 @@ namespace Infrastructure.Database
 
         public void Run()
         {
-            _migrationRunner.MigrateDown(0);
             _migrationRunner.MigrateUp();
         }
     }

@@ -3,11 +3,6 @@ using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repositories.BudgetRecordRepository;
 using Infrastructure.Repositories.BudgetRepository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
