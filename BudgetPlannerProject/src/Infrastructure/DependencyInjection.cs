@@ -46,6 +46,7 @@ namespace Infrastructure
                 .AddLogging(lb => lb.AddFluentMigratorConsole());
 
             services.AddScoped<Database.MigrationRunner>();
+            DapperConfig.Configure();
 
             return services;
         }

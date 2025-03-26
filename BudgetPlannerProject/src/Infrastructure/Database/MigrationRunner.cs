@@ -16,6 +16,7 @@ namespace Infrastructure.Database
 
         public void Run()
         {
+            _migrationRunner.MigrateDown(0);
             _migrationRunner.MigrateUp();
         }
     }

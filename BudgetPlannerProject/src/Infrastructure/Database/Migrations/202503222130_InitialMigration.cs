@@ -71,7 +71,7 @@ namespace Infrastructure.Database.Migrations
                     spending_date = new DateTime(2014, 5, 4),
                     budget_id = 1,
                     total = 13500.0,
-                    comment = "mynewPC"
+                    comment = "mynewPCQWE"
                 });
             Insert.IntoTable("budgetresults")
                 .Row(new
