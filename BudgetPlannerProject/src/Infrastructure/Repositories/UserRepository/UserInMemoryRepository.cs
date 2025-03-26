@@ -1,18 +1,13 @@
 ﻿using Bogus;
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories.UserRepository
 {
-    public class UserRepository : IUserRepository
+    public class UserInMemoryRepository : IUserRepository
     {
         private List<User> _users = new List<User>();
 
-        public UserRepository()
+        public UserInMemoryRepository()
         {
             PopulateTestData();
         }
@@ -70,7 +65,6 @@ namespace Infrastructure.Repositories
             userToUpdate.LastName = user.LastName;
             userToUpdate.FirstName = user.FirstName;
             userToUpdate.Email = user.Email;
-            userToUpdate.BudgetPlans = user.BudgetPlans;
             return Task.FromResult(true);
         }
     }

@@ -1,12 +1,8 @@
 ﻿using Application.Dtos;
 using AutoMapper;
 using Domain.Entities;
-using Infrastructure.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Infrastructure.Repositories.BudgetRecordRepository;
+using Infrastructure.Repositories.BudgetRepository;
 
 namespace Application.Services
 {
@@ -43,7 +39,7 @@ namespace Application.Services
             return await _budgetRecordRepository.Delete(id);
         }
 
-        public async Task<List<BudgetRecordDto>> GetAll()
+        public async Task<IEnumerable<BudgetRecordDto>> GetAll()
         {
             var budgetRecords = await _budgetRecordRepository.ReadAll();
             var mappedBudgetRecords = budgetRecords.Select(q => _mapper.Map<BudgetRecordDto>(q)).ToList();

@@ -1,18 +1,13 @@
 ﻿using Bogus;
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories.BudgetRepository
 {
-    public class BudgetRepository : IBudgetRepository
+    public class BudgetInMemoryRepository : IBudgetRepository
     {
         private List<Budget> _budgets = new List<Budget>();
 
-        public BudgetRepository()
+        public BudgetInMemoryRepository()
         {
             PopulateTestData();
         }

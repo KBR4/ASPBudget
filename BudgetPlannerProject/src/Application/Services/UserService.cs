@@ -1,12 +1,7 @@
 ﻿using Application.Dtos;
-using Infrastructure.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AutoMapper;
 using Domain.Entities;
+using Infrastructure.Repositories.UserRepository;
 
 namespace Application.Services
 {
@@ -36,7 +31,7 @@ namespace Application.Services
             return await _userRepository.Delete(id);
         }
 
-        public async Task<List<UserDto>> GetAll()
+        public async Task<IEnumerable<UserDto>> GetAll()
         {
             var users = await _userRepository.ReadAll();
             var mappedUsers = users.Select(q => _mapper.Map<UserDto>(q)).ToList();
