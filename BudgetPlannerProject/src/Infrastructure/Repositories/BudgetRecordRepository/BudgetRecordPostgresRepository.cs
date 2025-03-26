@@ -19,65 +19,47 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
 
         public async Task<int> Create(BudgetRecord budgetRecord)
         {
-            await _connection.OpenAsync();
             var budgetRecordId = await _connection.QuerySingleAsync<int>(
-                @"INSERT INTO budgetRecords (Name, CreationDate, SpendingDate, BudgetId, Total, Comment)
+                @"INSERT INTO budgetRecords (name, creation_date, spending_date, budget_id, total, comment)
                   VALUES(@Name, @CreationDate, @SpendingDate, @BudgetId, @Total, @Comment)
                   RETURNING id", new { budgetRecord.Name, budgetRecord.CreationDate, budgetRecord.SpendingDate, 
                     budgetRecord.BudgetId, budgetRecord.Total, budgetRecord.Comment });
 
-            await _connection.CloseAsync();
             return budgetRecordId;
         }
 
         public async Task<bool> Delete(int id)
         {
-            await _connection.OpenAsync();
             var affectedRows = await _connection.ExecuteAsync(
-                @"DELETE FROM budgetRecords WHERE @Id = id", new { Id = id });
+                @"DELETE FROM budgetRecords WHERE id = @Id", new { Id = id });
 
-            await _connection.CloseAsync();
             return affectedRows > 0;
         }
 
         public async Task<IEnumerable<BudgetRecord>> ReadAll()
         {
-            await _connection.OpenAsync();
             var budgetRecords = await _connection.QueryAsync<BudgetRecord>(
-                @"SELECT Id, Name, CreationDate, SpendingDate, BudgetId, Total, Comment FROM budgetRecords");
+                @"SELECT id, name, creation_date, spending_date, budget_id, total, comment FROM budgetRecords");
 
-            await _connection.CloseAsync();
             return budgetRecords.ToList();
         }
 
         public async Task<BudgetRecord?> ReadById(int id)
         {
-            await _connection.OpenAsync();
             var budgetRecord = await _connection.QueryFirstOrDefaultAsync<BudgetRecord>(
-                @"SELECT Name, CreationDate, SpendingDate, BudgetId, Total, Comment FROM budgetRecords WHERE @Id = id", new { Id = id });
+                @"SELECT name, creation_date, spending_date, budget_id, total, comment FROM budgetRecords WHERE id = @Id", new { Id = id });
 
-            await _connection.CloseAsync();
             return budgetRecord;
         }
 
         public async Task<bool> Update(BudgetRecord budgetRecord)
         {
-            await _connection.OpenAsync();
             var affectedRows = await _connection.ExecuteAsync(
                 @"UPDATE budgetRecords
-                SET Name = @Name, CreationDate = @CreationDate, SpendingDate = @SpendingDate, 
-                      BudgetId = @BudgetId, Total = @Total, Comment = @Comment
-                WHERE @Id = id", new {
-                      budgetRecord.Id,
-                      budgetRecord.Name,
-                      budgetRecord.CreationDate,
-                      budgetRecord.SpendingDate,
-                      budgetRecord.BudgetId,
-                      budgetRecord.Total,
-                      budgetRecord.Comment
-                });
+                SET name = @Name, creation_date = @CreationDate, spending_date = @SpendingDate, 
+                      budget_id = @BudgetId, total = @Total, comment = @Comment
+                WHERE id = @Id", budgetRecord);
 
-            await _connection.CloseAsync();
             return affectedRows > 0;
         }
     }

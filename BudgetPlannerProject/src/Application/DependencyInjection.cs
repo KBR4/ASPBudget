@@ -23,10 +23,6 @@ namespace Application
             services.AddTransient<IBudgetRecordService, BudgetRecordService>();
             services.AddTransient<IBudgetResultService, BudgetResultService>();
             
-            //services.AddFluentValidationAutoValidation();
-            //services.AddFluentValidationClientsideAdapters();
-            //services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-
             return services;
         }
     }

@@ -19,55 +19,45 @@ namespace Infrastructure.Repositories.BudgetResultRepository
 
         public async Task<int> Create(BudgetResult budgetResult)
         {
-            await _connection.OpenAsync();
             var budgetResultId = await _connection.QuerySingleAsync<int>(
-                @"INSERT INTO budgetResults (budgetId, TotalProfit)
+                @"INSERT INTO budgetResults (budget_id, total_profit)
                   VALUES(@BudgetId, @TotalProfit)
                   RETURNING id", new { budgetResult.BudgetId, budgetResult.TotalProfit });
 
-            await _connection.CloseAsync();
             return budgetResultId;
         }
 
         public async Task<bool> Delete(int id)
         {
-            await _connection.OpenAsync();
             var affectedRows = await _connection.ExecuteAsync(
-                @"DELETE FROM budgetResults WHERE @Id = id", new { Id = id });
+                @"DELETE FROM budgetResults WHERE id = @Id", new { Id = id });
 
-            await _connection.CloseAsync();
             return affectedRows > 0;
         }
 
         public async Task<IEnumerable<BudgetResult>> ReadAll()
         {
-            await _connection.OpenAsync();
             var budgetResults = await _connection.QueryAsync<BudgetResult>(
-                @"SELECT Id, BudgetId, TotalProfit FROM budgetResults");
+                @"SELECT id, budget_id, total_profit FROM budgetResults");
 
-            await _connection.CloseAsync();
             return budgetResults.ToList();
         }
 
         public async Task<BudgetResult?> ReadById(int id)
         {
-            await _connection.OpenAsync();
             var budgetResult = await _connection.QueryFirstOrDefaultAsync<BudgetResult>(
-                @"SELECT Id, BudgetId, TotalProfit FROM budgetResults WHERE @Id = id", new { Id = id });
+                @"SELECT id, budget_id, total_profit FROM budgetResults WHERE id = @Id", new { Id = id });
 
-            await _connection.CloseAsync();
             return budgetResult;
         }
 
         public async Task<bool> Update(BudgetResult budgetResult)
         {
-            await _connection.OpenAsync();
             var affectedRows = await _connection.ExecuteAsync(
                 @"UPDATE budgetResults
-                  SET BudgetId = @BudgetId, TotalProfit = @TotalProfit 
-                  WHERE @Id = id", new { budgetResult.Id, budgetResult.BudgetId, budgetResult.TotalProfit });
+                  SET BudgetId = @budget_id, total_profit = @TotalProfit 
+                  WHERE id = @Id", budgetResult);
 
-            await _connection.CloseAsync();
             return affectedRows > 0;
         }
     }
