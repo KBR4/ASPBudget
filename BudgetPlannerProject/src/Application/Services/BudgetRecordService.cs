@@ -1,8 +1,11 @@
 ﻿using Application.Dtos;
+using Application.Exceptions;
+using Application.Requests;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repositories.BudgetRecordRepository;
 using Infrastructure.Repositories.BudgetRepository;
+using Infrastructure.Repositories.BudgetResultRepository;
 
 namespace Application.Services
 {
@@ -19,19 +22,23 @@ namespace Application.Services
             _budgetRepository = budgetRepository;
         }
 
-        public async Task<int> Add(BudgetRecordDto budgetRecord)
+        public async Task<int> Add(CreateBudgetRecordRequest request)
         {
-            var mappedBudgetRecord = _mapper.Map<BudgetRecord>(budgetRecord);
-            if (mappedBudgetRecord != null)
+            var budgetRecord = new BudgetRecord()
             {
-                await _budgetRecordRepository.Create(mappedBudgetRecord);
-            }
+                Name = request.Name,
+                CreationDate = request.CreationDate,
+                SpendingDate = request.SpendingDate,
+                BudgetId = request.BudgetId,
+                Total = request.Total,
+                Comment = request.Comment                          
+            };
             var budget = await _budgetRepository.ReadById(budgetRecord.BudgetId);
             if (budget == null)
             {
                 return -1;
             }
-            return -1;
+            return await _budgetRecordRepository.Create(budgetRecord);
         }
 
         public async Task<bool> Delete(int id)
@@ -42,6 +49,10 @@ namespace Application.Services
         public async Task<IEnumerable<BudgetRecordDto>> GetAll()
         {
             var budgetRecords = await _budgetRecordRepository.ReadAll();
+            if (budgetRecords is null || budgetRecords.Count() == 0)
+            {
+                throw new NotFoundApplicationException("Users not found");
+            }
             var mappedBudgetRecords = budgetRecords.Select(q => _mapper.Map<BudgetRecordDto>(q)).ToList();
             return mappedBudgetRecords;
         }
@@ -53,19 +64,24 @@ namespace Application.Services
             return mappedBudgetRecord;
         }
 
-        public async Task<bool> Update(BudgetRecordDto budgetRecord)
+        public async Task<bool> Update(UpdateBudgetRecordRequest request)
         {
-            if (budgetRecord == null)
+            var budgetRecord = new BudgetRecord()
             {
-                return false;
-            }
-            var mappedBudgetRecord = _mapper.Map<BudgetRecord>(budgetRecord);
+                Id = request.Id,
+                Name = request.Name,
+                CreationDate = request.CreationDate,
+                SpendingDate = request.SpendingDate,
+                BudgetId = request.BudgetId,
+                Total = request.Total,
+                Comment = request.Comment
+            };
             var budget = await _budgetRepository.ReadById(budgetRecord.BudgetId);
             if (budget == null)
             {
                 return false;
             }
-            return await _budgetRecordRepository.Update(mappedBudgetRecord);
+            return await _budgetRecordRepository.Update(budgetRecord);
         }
     }
 }

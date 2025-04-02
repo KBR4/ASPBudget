@@ -1,4 +1,6 @@
 ﻿using Application.Dtos;
+using Application.Exceptions;
+using Application.Requests;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repositories.BudgetRepository;
@@ -19,19 +21,19 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<int> Add(BudgetResultDto budgetResult)
+        public async Task<int> Add(CreateBudgetResultRequest request)
         {
-            var mappedBudgetResult = _mapper.Map<BudgetResult>(budgetResult);        
-            if (mappedBudgetResult == null)
+            var budgetResult = new BudgetResult()
             {
-                return -1;
-            }
+                BudgetId = request.BudgetId,
+                TotalProfit = request.TotalProfit
+            };
             var budget = await _budgetRepository.ReadById(budgetResult.BudgetId);
             if (budget == null)
             {
                 return -1;
             }
-            return await _budgetResultRepository.Create(mappedBudgetResult);
+            return await _budgetResultRepository.Create(budgetResult);
         }
 
         public async Task<bool> Delete(int id)
@@ -42,6 +44,10 @@ namespace Application.Services
         public async Task<IEnumerable<BudgetResultDto>> GetAll()
         {
             var budgetResults = await _budgetResultRepository.ReadAll();
+            if (budgetResults is null || budgetResults.Count() == 0)
+            {
+                throw new NotFoundApplicationException("Users not found");
+            }
             var mappedBudgetResults = budgetResults.Select(q => _mapper.Map<BudgetResultDto>(q)).ToList();
             return mappedBudgetResults;
         }
@@ -53,19 +59,20 @@ namespace Application.Services
             return mappedBudgetResult;
         }
 
-        public async Task<bool> Update(BudgetResultDto budgetResult)
+        public async Task<bool> Update(UpdateBudgetResultRequest request)
         {
-            if (budgetResult == null)
+            var budgetResult = new BudgetResult()
             {
-                return false;
-            }
-            var mappedBudgetResult = _mapper.Map<BudgetResult>(budgetResult);
+                Id = request.Id,
+                BudgetId = request.BudgetId,
+                TotalProfit = request.TotalProfit
+            };
             var budget = await _budgetRepository.ReadById(budgetResult.BudgetId);
             if (budget == null)
             {
                 return false;
             }
-            return await _budgetResultRepository.Update(mappedBudgetResult);
+            return await _budgetResultRepository.Update(budgetResult);
         }
     }
 }

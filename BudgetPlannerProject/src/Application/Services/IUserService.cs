@@ -1,4 +1,5 @@
 ﻿using Application.Dtos;
+using Application.Requests;
 
 namespace Application.Services
 {
@@ -6,8 +7,8 @@ namespace Application.Services
     {
         public Task<UserDto?> GetById(int id);
         public Task<IEnumerable<UserDto>> GetAll();
-        public Task<int> Add(UserDto user);
-        public Task<bool> Update(UserDto user);
+        public Task<int> Add(CreateUserRequest request);
+        public Task<bool> Update(UpdateUserRequest request);
         public Task<bool> Delete(int id);
     }
 }

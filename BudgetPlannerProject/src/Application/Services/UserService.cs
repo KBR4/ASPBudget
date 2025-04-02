@@ -1,4 +1,6 @@
 ﻿using Application.Dtos;
+using Application.Exceptions;
+using Application.Requests;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repositories.UserRepository;
@@ -16,14 +18,16 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<int> Add(UserDto user)
+        public async Task<int> Add(CreateUserRequest request)
         {
-            var mappedUser = _mapper.Map<User>(user);
-            if (mappedUser != null)
+            var user = new User()
             {
-                await _userRepository.Create(mappedUser);
-            }
-            return -1;
+                LastName = request.LastName,
+                FirstName = request.FirstName,
+                Email = request.Email,
+                BudgetPlans = new List<Budget>()
+            };
+            return await _userRepository.Create(user);
         }
 
         public async Task<bool> Delete(int id)
@@ -34,6 +38,10 @@ namespace Application.Services
         public async Task<IEnumerable<UserDto>> GetAll()
         {
             var users = await _userRepository.ReadAll();
+            if (users is null || users.Count() == 0)
+            {
+                throw new NotFoundApplicationException("Users not found");
+            }
             var mappedUsers = users.Select(q => _mapper.Map<UserDto>(q)).ToList();
             return mappedUsers;
         }
@@ -45,14 +53,16 @@ namespace Application.Services
             return mappedUser;
         }
 
-        public async Task<bool> Update(UserDto user)
+        public async Task<bool> Update(UpdateUserRequest request)
         {
-            if (user == null)
+            var user = new User()
             {
-                return false;
-            }
-            var mappedUser = _mapper.Map<User>(user);
-            return await _userRepository.Update(mappedUser);
+                Id = request.Id,
+                LastName = request.LastName,
+                FirstName = request.FirstName,
+                Email = request.Email
+            };
+            return await _userRepository.Update(user);
         }
     }
 }

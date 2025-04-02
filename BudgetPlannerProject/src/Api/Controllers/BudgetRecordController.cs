@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Application.Dtos;
 using Application.Services;
+using Application.Requests;
 
 namespace Api.Controllers
 {
@@ -34,21 +35,21 @@ namespace Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] BudgetRecordDto budgetRecord)
+        public async Task<IActionResult> Add([FromBody] CreateBudgetRecordRequest request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var budgetRecordId = await _budgetRecordService.Add(budgetRecord);
+            var budgetRecordId = await _budgetRecordService.Add(request);
             var res = new { Id = budgetRecordId };
             return CreatedAtAction(nameof(GetById), new { id = budgetRecordId }, res);
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] BudgetRecordDto budgetRecord)
+        public async Task<IActionResult> Update([FromBody] UpdateBudgetRecordRequest request)
         {
-            var result = await _budgetRecordService.Update(budgetRecord);
+            var result = await _budgetRecordService.Update(request);
             if (!result)
             {
                 return NotFound();

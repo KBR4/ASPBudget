@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Application.Dtos;
 using Application.Services;
+using Application.Requests;
 
 namespace Api.Controllers
 {
@@ -34,21 +35,21 @@ namespace Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] UserDto user)
+        public async Task<IActionResult> Add([FromBody] CreateUserRequest request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var userId = await _userService.Add(user);
+            var userId = await _userService.Add(request);
             var res = new { Id = userId };
             return CreatedAtAction(nameof(GetById), new { id = userId }, res);
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UserDto user)
+        public async Task<IActionResult> Update([FromBody] UpdateUserRequest request)
         {
-            var result = await _userService.Update(user);
+            var result = await _userService.Update(request);
             if (!result)
             {
                 return NotFound();
