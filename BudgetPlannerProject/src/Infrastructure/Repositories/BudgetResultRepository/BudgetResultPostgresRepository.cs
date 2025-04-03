@@ -50,7 +50,7 @@ namespace Infrastructure.Repositories.BudgetResultRepository
         {
             var affectedRows = await _connection.ExecuteAsync(
                 @"UPDATE budgetResults
-                  SET BudgetId = @budget_id, total_profit = @TotalProfit 
+                  SET budget_id = @budgetId, total_profit = @TotalProfit 
                   WHERE id = @Id", budgetResult);
 
             return affectedRows > 0;
