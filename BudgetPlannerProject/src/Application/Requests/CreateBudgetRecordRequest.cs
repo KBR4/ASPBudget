@@ -16,12 +16,12 @@ namespace Application.Requests
     {
         public CreateBudgetRecordRequestValidator()
         {
-            RuleFor(x => x.Name).NotEmpty().MaximumLength(100).WithMessage("{PropertyName} has max length of 100.");
+            RuleFor(x => x.Name).NotEmpty().MaximumLength(ValidationConstants.MaxBudgetNameLength);
             RuleFor(x => x.CreationDate).GreaterThanOrEqualTo(new DateTime(1970, 1, 1));
-            RuleFor(x => x.SpendingDate).LessThanOrEqualTo(new DateTime(2038, 1, 1));
+            RuleFor(x => x.SpendingDate).GreaterThanOrEqualTo(new DateTime(1970, 1, 1));
             RuleFor(x => x.BudgetId).NotEmpty().GreaterThan(0).WithMessage("BudgetId must be greater than 0.")
-                .LessThan(int.MaxValue).WithMessage("BudgetId is too big.");
-            RuleFor(x => x.Comment).MaximumLength(511).WithMessage("{PropertyName} has max length of 511.");
+                .LessThan(int.MaxValue);
+            RuleFor(x => x.Comment).MaximumLength(ValidationConstants.MaxCommentLength);
         }
     }
 }

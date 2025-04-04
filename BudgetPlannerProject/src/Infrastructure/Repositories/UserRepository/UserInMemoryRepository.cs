@@ -22,8 +22,6 @@ namespace Infrastructure.Repositories.UserRepository
                 user.LastName = faker.Person.LastName;
                 user.FirstName = faker.Person.FirstName;
                 user.Email = faker.Person.Email;
-                List<Budget> budgets = new List<Budget>();
-                user.BudgetPlans = budgets;
                 _users.Add(user);
             }
         }

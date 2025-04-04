@@ -31,26 +31,25 @@ namespace Application.Services
                 Description = request.Description,
                 CreatorId = request.CreatorId
             };
-            var user = await _userRepository.ReadById(budget.CreatorId);
-            if (user == null)
+            if (budget == null)
             {
-                return -1;
+                throw new NotFoundApplicationException("Budget wasn't created.");
             }
             return await _budgetRepository.Create(budget);
         }
 
-        public async Task<bool> Delete(int id)
+        public async Task Delete(int id)
         {
-            return await _budgetRepository.Delete(id);
+            var res = await _budgetRepository.Delete(id);
+            if (res == false)
+            {
+                throw new EntityDeleteException("Error when deleting Budget.");
+            }
         }
 
         public async Task<IEnumerable<BudgetDto>> GetAll()
         {
             var budgets = await _budgetRepository.ReadAll();
-            if (budgets is null || budgets.Count() == 0)
-            {
-                throw new NotFoundApplicationException("Users not found");
-            }
             var mappedBudgets = budgets.Select(q => _mapper.Map<BudgetDto>(q)).ToList();
             return mappedBudgets;
         }
@@ -58,11 +57,15 @@ namespace Application.Services
         public async Task<BudgetDto?> GetById(int id)
         {
             var budget = await _budgetRepository.ReadById(id);
+            if (budget == null)
+            {
+                throw new NotFoundApplicationException("Budget not found.");
+            }
             var mappedBudget = _mapper.Map<BudgetDto>(budget);
             return mappedBudget;
         }
 
-        public async Task<bool> Update(UpdateBudgetRequest request)
+        public async Task Update(UpdateBudgetRequest request)
         {
             var budget = new Budget()
             {
@@ -73,12 +76,11 @@ namespace Application.Services
                 Description = request.Description,
                 CreatorId = request.CreatorId
             };
-            var user = await _userRepository.ReadById(budget.CreatorId);
-            if (user == null)
+            var res = await _budgetRepository.Update(budget);
+            if (res == false)
             {
-                return false;
+                throw new EntityUpdateException("Budget wasn't updated.");
             }
-            return await _budgetRepository.Update(budget);
         }
     }
 }

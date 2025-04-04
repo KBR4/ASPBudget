@@ -1,23 +1,23 @@
-﻿using Application.Exceptions;
-using Microsoft.AspNetCore.Diagnostics;
+﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using System.Data.Common;
 
 namespace Api.ExceptionHandlers
 {
-    public class ApplicationExceptionHandler(IProblemDetailsService _problemDetailsService) : IExceptionHandler
+    public class DbExceptionHandler(IProblemDetailsService problemDetailsService) : IExceptionHandler
     {
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            if (exception is not BaseApplicationException e)
+            if (exception is not DbException e)
                 return false;
 
-            httpContext.Response.StatusCode = (int)e.StatusCode;
+            httpContext.Response.StatusCode = e.ErrorCode;
             httpContext.Response.ContentType = "application/problem+json";
 
             var problemDetails = new ProblemDetails
             {
-                Status = (int)e.StatusCode,
-                Title = e.Title,
+                Status = (int)e.ErrorCode,
+                Title = "Database Error",   //есть что-то лучше записать сюда?
                 Detail = e.Message,
                 Instance = httpContext.Request.Path,
                 Type = e.GetType().Name,
@@ -29,9 +29,8 @@ namespace Api.ExceptionHandlers
                 ProblemDetails = problemDetails,
                 Exception = e
             };
-            await _problemDetailsService.WriteAsync(problemDetailsContext);
+            await problemDetailsService.WriteAsync(problemDetailsContext);
             return true;
         }
     }
 }
-

@@ -17,8 +17,8 @@ namespace Application.Requests
                 .LessThan(int.MaxValue).WithMessage("Id is too big.");
             RuleFor(x => x.BudgetId).NotEmpty().GreaterThan(0).WithMessage("BudgetId must be greater than 0.")
                 .LessThan(int.MaxValue).WithMessage("BudgetId is too big.");
-            RuleFor(x => x.TotalProfit).GreaterThan(double.MinValue).WithMessage("Absolute value of TotalProfit is too big.")
-                .LessThan(double.MaxValue).WithMessage("TotalProfit is too big.");
+            RuleFor(x => x.TotalProfit).GreaterThan(double.MinValue)
+                .LessThan(double.MaxValue);
         }
     }
 }

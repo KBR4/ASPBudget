@@ -15,9 +15,9 @@ namespace Application.Requests
         {
             RuleFor(x => x.Id).NotEmpty().GreaterThan(0).WithMessage("Id must be greater than 0.")
                 .LessThan(int.MaxValue).WithMessage("Id is too big.");
-            RuleFor(x => x.LastName).NotEmpty().MaximumLength(40).WithMessage("{PropertyName} has max length of 40.");
-            RuleFor(x => x.FirstName).NotEmpty().MaximumLength(40).WithMessage("{PropertyName} has max length of 40.");
-            RuleFor(x => x.Email).MaximumLength(100).WithMessage("{PropertyName} has max length of 100.");
+            RuleFor(x => x.LastName).NotEmpty().MaximumLength(ValidationConstants.MaxUserNameLength);
+            RuleFor(x => x.FirstName).NotEmpty().MaximumLength(ValidationConstants.MaxUserNameLength);
+            RuleFor(x => x.Email).MaximumLength(ValidationConstants.MaxEmailLength);
         }
     }
 }

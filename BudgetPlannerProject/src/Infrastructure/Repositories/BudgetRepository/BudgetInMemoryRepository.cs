@@ -28,8 +28,7 @@ namespace Infrastructure.Repositories.BudgetRepository
                     Id = i + 1,
                     FirstName = faker.Person.FirstName,
                     LastName = faker.Person.LastName,
-                    Email = faker.Person.Email,
-                    BudgetPlans = new List<Budget>() { budget }
+                    Email = faker.Person.Email
                 };
                 _budgets.Add(budget);
             }

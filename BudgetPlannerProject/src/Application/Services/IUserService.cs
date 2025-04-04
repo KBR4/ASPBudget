@@ -8,7 +8,7 @@ namespace Application.Services
         public Task<UserDto?> GetById(int id);
         public Task<IEnumerable<UserDto>> GetAll();
         public Task<int> Add(CreateUserRequest request);
-        public Task<bool> Update(UpdateUserRequest request);
-        public Task<bool> Delete(int id);
+        public Task Update(UpdateUserRequest request);
+        public Task Delete(int id);
     }
 }

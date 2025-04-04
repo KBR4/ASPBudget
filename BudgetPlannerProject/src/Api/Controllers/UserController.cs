@@ -20,10 +20,6 @@ namespace Api.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var user = await _userService.GetById(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
             return Ok(user);
         }
 
@@ -37,10 +33,6 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] CreateUserRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             var userId = await _userService.Add(request);
             var res = new { Id = userId };
             return CreatedAtAction(nameof(GetById), new { id = userId }, res);
@@ -49,22 +41,14 @@ namespace Api.Controllers
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateUserRequest request)
         {
-            var result = await _userService.Update(request);
-            if (!result)
-            {
-                return NotFound();
-            }
-            return Ok(result);
+            await _userService.Update(request);
+            return Ok();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _userService.Delete(id);
-            if (!result)
-            {
-                return NotFound();
-            }
+            await _userService.Delete(id);
             return NoContent();
         }
     }

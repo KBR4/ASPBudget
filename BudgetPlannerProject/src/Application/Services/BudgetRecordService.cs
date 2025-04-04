@@ -27,32 +27,30 @@ namespace Application.Services
             var budgetRecord = new BudgetRecord()
             {
                 Name = request.Name,
-                CreationDate = request.CreationDate,
                 SpendingDate = request.SpendingDate,
                 BudgetId = request.BudgetId,
                 Total = request.Total,
                 Comment = request.Comment                          
             };
-            var budget = await _budgetRepository.ReadById(budgetRecord.BudgetId);
-            if (budget == null)
+            if (budgetRecord == null)
             {
-                return -1;
+                throw new NotFoundApplicationException("BudgetRecord wasn't created.");
             }
             return await _budgetRecordRepository.Create(budgetRecord);
         }
 
-        public async Task<bool> Delete(int id)
+        public async Task Delete(int id)
         {
-            return await _budgetRecordRepository.Delete(id);
+            var res = await _budgetRecordRepository.Delete(id);
+            if (res == false)
+            {
+                throw new EntityDeleteException("BudgetRecord for deletion not found");
+            }
         }
 
         public async Task<IEnumerable<BudgetRecordDto>> GetAll()
         {
             var budgetRecords = await _budgetRecordRepository.ReadAll();
-            if (budgetRecords is null || budgetRecords.Count() == 0)
-            {
-                throw new NotFoundApplicationException("Users not found");
-            }
             var mappedBudgetRecords = budgetRecords.Select(q => _mapper.Map<BudgetRecordDto>(q)).ToList();
             return mappedBudgetRecords;
         }
@@ -60,28 +58,30 @@ namespace Application.Services
         public async Task<BudgetRecordDto?> GetById(int id)
         {
             var budgetRecord = await _budgetRecordRepository.ReadById(id);
+            if (budgetRecord == null)
+            {
+                throw new NotFoundApplicationException("Error when deleting BudgetRecord.");
+            }
             var mappedBudgetRecord = _mapper.Map<BudgetRecordDto>(budgetRecord);
             return mappedBudgetRecord;
         }
 
-        public async Task<bool> Update(UpdateBudgetRecordRequest request)
+        public async Task Update(UpdateBudgetRecordRequest request)
         {
             var budgetRecord = new BudgetRecord()
             {
                 Id = request.Id,
                 Name = request.Name,
-                CreationDate = request.CreationDate,
                 SpendingDate = request.SpendingDate,
                 BudgetId = request.BudgetId,
                 Total = request.Total,
                 Comment = request.Comment
             };
-            var budget = await _budgetRepository.ReadById(budgetRecord.BudgetId);
-            if (budget == null)
+            var res = await _budgetRecordRepository.Update(budgetRecord);
+            if (res == false)
             {
-                return false;
+                throw new EntityUpdateException("BudgetRecord wasn't updated.");
             }
-            return await _budgetRecordRepository.Update(budgetRecord);
         }
     }
 }

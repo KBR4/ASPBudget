@@ -20,10 +20,6 @@ namespace Api.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var budgetResult = await _budgetResultService.GetById(id);
-            if (budgetResult == null)
-            {
-                return NotFound();
-            }
             return Ok(budgetResult);
         }
 
@@ -37,10 +33,6 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] CreateBudgetResultRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             var budgetResultId = await _budgetResultService.Add(request);
             var res = new { Id = budgetResultId };
             return CreatedAtAction(nameof(GetById), new { id = budgetResultId }, res);
@@ -49,22 +41,14 @@ namespace Api.Controllers
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateBudgetResultRequest request)
         {
-            var result = await _budgetResultService.Update(request);
-            if (!result)
-            {
-                return NotFound();
-            }
-            return Ok(result);
+            await _budgetResultService.Update(request);
+            return Ok();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _budgetResultService.Delete(id);
-            if (!result)
-            {
-                return NotFound();
-            }
+            await _budgetResultService.Delete(id);
             return NoContent();
         }
     }

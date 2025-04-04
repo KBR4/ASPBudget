@@ -8,7 +8,7 @@ namespace Application.Services
         public Task<BudgetRecordDto?> GetById(int id);
         public Task<IEnumerable<BudgetRecordDto>> GetAll();
         public Task<int> Add(CreateBudgetRecordRequest request);
-        public Task<bool> Update(UpdateBudgetRecordRequest request);
-        public Task<bool> Delete(int id);
+        public Task Update(UpdateBudgetRecordRequest request);
+        public Task Delete(int id);
     }
 }

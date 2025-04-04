@@ -17,7 +17,7 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
             var budgetRecordId = await _connection.QuerySingleAsync<int>(
                 @"INSERT INTO budgetrecords (name, creation_date, spending_date, budget_id, total, comment)
                   VALUES (@Name, @CreationDate, @SpendingDate, @BudgetId, @Total, @Comment)
-                  RETURNING id", new { budgetRecord.Name, budgetRecord.CreationDate, budgetRecord.SpendingDate, 
+                  RETURNING id", new { budgetRecord.Name, DateTime.Now, budgetRecord.SpendingDate, 
                     budgetRecord.BudgetId, budgetRecord.Total, budgetRecord.Comment });
 
             return budgetRecordId;
@@ -51,9 +51,9 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
         {
             var affectedRows = await _connection.ExecuteAsync(
                 @"UPDATE budgetrecords
-                SET name = @Name, creation_date = @CreationDate, spending_date = @SpendingDate, 
+                SET name = @Name, spending_date = @SpendingDate, 
                       budget_id = @BudgetId, total = @Total, comment = @Comment
-                WHERE id = @Id", budgetRecord);
+                WHERE id = @Id", new { budgetRecord.Id, budgetRecord.Name, budgetRecord.SpendingDate, budgetRecord.BudgetId, budgetRecord.Total, budgetRecord.Comment});
 
             return affectedRows > 0;
         }
