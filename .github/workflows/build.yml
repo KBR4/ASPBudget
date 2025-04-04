@@ -20,7 +20,7 @@ jobs:
         image: postgres
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 1234
+          POSTGRES_PASSWORD: password
           POSTGRES_DB: budget_db_integration
         options: >-
           --health-cmd pg_isready
