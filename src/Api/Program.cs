@@ -13,9 +13,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<DbExceptionHandler>();
 builder.Services.AddExceptionHandler<ApplicationExceptionHandler>(); 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddExceptionHandler<DbExceptionHandler>();
 
 builder.Services.AddInfrastructure();
 builder.Services.AddApplication();

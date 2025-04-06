@@ -32,10 +32,6 @@ namespace Application.Services
                 Total = request.Total,
                 Comment = request.Comment                          
             };
-            if (budgetRecord == null)
-            {
-                throw new NotFoundApplicationException("BudgetRecord wasn't created.");
-            }
             return await _budgetRecordRepository.Create(budgetRecord);
         }
 
@@ -60,7 +56,7 @@ namespace Application.Services
             var budgetRecord = await _budgetRecordRepository.ReadById(id);
             if (budgetRecord == null)
             {
-                throw new NotFoundApplicationException("Error when deleting BudgetRecord.");
+                throw new NotFoundApplicationException("BudgetRecord not found.");
             }
             var mappedBudgetRecord = _mapper.Map<BudgetRecordDto>(budgetRecord);
             return mappedBudgetRecord;

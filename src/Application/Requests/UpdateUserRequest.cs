@@ -13,8 +13,7 @@ namespace Application.Requests
     {
         public UpdateUserRequestValidator()
         {
-            RuleFor(x => x.Id).NotEmpty().GreaterThan(0).WithMessage("Id must be greater than 0.")
-                .LessThan(int.MaxValue).WithMessage("Id is too big.");
+            RuleFor(x => x.Id).NotEmpty().ExclusiveBetween(0, int.MaxValue);
             RuleFor(x => x.LastName).NotEmpty().MaximumLength(ValidationConstants.MaxUserNameLength);
             RuleFor(x => x.FirstName).NotEmpty().MaximumLength(ValidationConstants.MaxUserNameLength);
             RuleFor(x => x.Email).MaximumLength(ValidationConstants.MaxEmailLength);

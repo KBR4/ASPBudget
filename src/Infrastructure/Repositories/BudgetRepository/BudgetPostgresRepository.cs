@@ -17,7 +17,7 @@ namespace Infrastructure.Repositories.BudgetRepository
             var budgetId = await _connection.QuerySingleAsync<int>(
                 @"INSERT INTO budgets (name, start_date, finish_date, description, creator_id)
                   VALUES(@Name, @StartDate, @FinishDate, @Description, @CreatorId)
-                  RETURNING id", new { budget.Name, budget.StartDate, budget.FinishDate, budget.Description, budget.CreatorId });
+                  RETURNING id", budget);
 
             return budgetId;
         }

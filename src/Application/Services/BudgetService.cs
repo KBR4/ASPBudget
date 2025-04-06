@@ -31,10 +31,6 @@ namespace Application.Services
                 Description = request.Description,
                 CreatorId = request.CreatorId
             };
-            if (budget == null)
-            {
-                throw new NotFoundApplicationException("Budget wasn't created.");
-            }
             return await _budgetRepository.Create(budget);
         }
 

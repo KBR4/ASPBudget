@@ -17,7 +17,7 @@ namespace Api.ExceptionHandlers
             var problemDetails = new ProblemDetails
             {
                 Status = (int)e.ErrorCode,
-                Title = "Database Error",   //есть что-то лучше записать сюда?
+                Title = "Executing Query to Database Error",
                 Detail = e.Message,
                 Instance = httpContext.Request.Path,
                 Type = e.GetType().Name,

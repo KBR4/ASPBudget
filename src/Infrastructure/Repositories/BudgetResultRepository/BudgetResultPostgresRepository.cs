@@ -17,7 +17,7 @@ namespace Infrastructure.Repositories.BudgetResultRepository
             var budgetResultId = await _connection.QuerySingleAsync<int>(
                 @"INSERT INTO budgetResults (budget_id, total_profit)
                   VALUES(@BudgetId, @TotalProfit)
-                  RETURNING id", new { budgetResult.BudgetId, budgetResult.TotalProfit });
+                  RETURNING id", budgetResult);
 
             return budgetResultId;
         }

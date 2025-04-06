@@ -14,11 +14,11 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
 
         public async Task<int> Create(BudgetRecord budgetRecord)
         {
+            budgetRecord.CreationDate = DateTime.Now;
             var budgetRecordId = await _connection.QuerySingleAsync<int>(
                 @"INSERT INTO budgetrecords (name, creation_date, spending_date, budget_id, total, comment)
                   VALUES (@Name, @CreationDate, @SpendingDate, @BudgetId, @Total, @Comment)
-                  RETURNING id", new { budgetRecord.Name, DateTime.Now, budgetRecord.SpendingDate, 
-                    budgetRecord.BudgetId, budgetRecord.Total, budgetRecord.Comment });
+                  RETURNING id", budgetRecord);
 
             return budgetRecordId;
         }

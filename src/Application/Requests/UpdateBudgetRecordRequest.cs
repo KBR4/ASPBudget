@@ -17,15 +17,12 @@ namespace Application.Requests
     {
         public UpdateBudgetRecordRequestValidator()
         {
-            RuleFor(x => x.Id).NotEmpty().GreaterThan(0).WithMessage("Id must be greater than 0.")
-                .LessThan(int.MaxValue).WithMessage("Id is too big.");
+            RuleFor(x => x.Id).NotEmpty().ExclusiveBetween(0, int.MaxValue);
             RuleFor(x => x.Name).NotEmpty().MaximumLength(ValidationConstants.MaxBudgetNameLength);
             RuleFor(x => x.CreationDate).GreaterThanOrEqualTo(new DateTime(1970, 1, 1));
             RuleFor(x => x.SpendingDate).GreaterThanOrEqualTo(new DateTime(1970, 1, 1));
-            RuleFor(x => x.BudgetId).NotEmpty().GreaterThan(0).WithMessage("BudgetId must be greater than 0.")
-                .LessThan(int.MaxValue);
-            RuleFor(x => x.Total).GreaterThan(double.MinValue)
-                .LessThan(double.MaxValue);
+            RuleFor(x => x.BudgetId).NotEmpty().ExclusiveBetween(0, int.MaxValue);
+            RuleFor(x => x.Total).ExclusiveBetween(double.MinValue, double.MaxValue);
             RuleFor(x => x.Comment).MaximumLength(ValidationConstants.MaxCommentLength);
         }
     }

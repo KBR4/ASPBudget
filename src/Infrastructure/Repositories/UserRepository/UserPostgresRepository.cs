@@ -17,7 +17,7 @@ namespace Infrastructure.Repositories.UserRepository
             var userId = await _connection.QuerySingleAsync<int>(
                 @"INSERT INTO users (last_name, first_name, email)
                   VALUES(@LastName, @FirstName, @Email)
-                  RETURNING id", new { user.LastName, user.FirstName, user.Email });
+                  RETURNING id", user);
 
             return userId;
         }

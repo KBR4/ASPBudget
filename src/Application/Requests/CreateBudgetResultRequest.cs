@@ -12,10 +12,8 @@ namespace Application.Requests
     {
         public CreateBudgetResultRequestValidator()
         {
-            RuleFor(x => x.BudgetId).NotEmpty().GreaterThan(0).WithMessage("BudgetId must be greater than 0.")
-                .LessThan(int.MaxValue).WithMessage("BudgetId is too big.");
-            RuleFor(x => x.TotalProfit).GreaterThan(double.MinValue)
-                .LessThan(double.MaxValue);
+            RuleFor(x => x.BudgetId).NotEmpty().ExclusiveBetween(0, int.MaxValue);
+            RuleFor(x => x.TotalProfit).ExclusiveBetween(double.MinValue, double.MaxValue);
         }
     }
 }

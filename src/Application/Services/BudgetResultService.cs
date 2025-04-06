@@ -28,10 +28,6 @@ namespace Application.Services
                 BudgetId = request.BudgetId,
                 TotalProfit = request.TotalProfit
             };
-            if (budgetResult == null)
-            {
-                throw new NotFoundApplicationException("BudgetResult wasn't created.");
-            }
             return await _budgetResultRepository.Create(budgetResult);
         }
 

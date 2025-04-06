@@ -26,10 +26,6 @@ namespace Application.Services
                 FirstName = request.FirstName,
                 Email = request.Email,
             };
-            if (user == null)
-            {
-                throw new NotFoundApplicationException("User wasn't created.");
-            }
             return await _userRepository.Create(user);
         }
 
