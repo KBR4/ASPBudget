@@ -1,26 +1,27 @@
-﻿using Application.Dtos;
+﻿using Application.Exceptions;
 using Application.Requests;
 using Application.Services;
+using Bogus;
 using Domain.Entities;
 using FluentAssertions;
 using Infrastructure.Repositories.BudgetResultRepository;
-using Infrastructure.Repositories.BudgetRepository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ApplicationIntegrationTests.Services
 {
+    [Collection("IntegrationTests")]
     public class BudgetResultServiceIntegrationTests : IClassFixture<TestingFixture>
     {
         private readonly TestingFixture _fixture;
         private readonly IBudgetResultService _budgetResultService;
-        private readonly IBudgetResultRepository _budgetResultRepository;
+        private readonly Faker _faker;
 
         public BudgetResultServiceIntegrationTests(TestingFixture fixture)
         {
             _fixture = fixture;
             var scope = fixture.ServiceProvider.CreateScope();
             _budgetResultService = scope.ServiceProvider.GetRequiredService<IBudgetResultService>();
-            _budgetResultRepository = scope.ServiceProvider.GetRequiredService<IBudgetResultRepository>();
+            _faker = new Faker();
         }
 
         [Fact]
@@ -31,100 +32,133 @@ namespace ApplicationIntegrationTests.Services
             var request = new CreateBudgetResultRequest
             {
                 BudgetId = budget.Id,
-                TotalProfit = 1500.75
+                TotalProfit = Math.Round(_faker.Random.Double(1000, 10000), 2)
             };
 
             // Act
             var resultId = await _budgetResultService.Add(request);
-            var result = await _budgetResultRepository.ReadById(resultId);
 
             // Assert
-            result.Should().NotBeNull();
-            result!.BudgetId.Should().Be(budget.Id);
-            result.TotalProfit.Should().Be(request.TotalProfit);
+            var budgetResults = await _budgetResultService.GetAll();
+            budgetResults.Should().Contain(q => q.BudgetId == request.BudgetId && q.TotalProfit == request.TotalProfit);
         }
 
         [Fact]
         public async Task GetById_ShouldReturnBudgetResultFromDatabase()
         {
             // Arrange
-            var budget = await _fixture.CreateBudget();
-            var resultId = await _budgetResultRepository.Create(new BudgetResult
-            {
-                BudgetId = budget.Id,
-                TotalProfit = 2000.50
-            });
+            var createdBudgetResult = await _fixture.CreateBudgetResult();
 
             // Act
-            var result = await _budgetResultService.GetById(resultId);
+            var result = await _budgetResultService.GetById(createdBudgetResult.Id);
 
             // Assert
             result.Should().NotBeNull();
-            result.Id.Should().Be(resultId);
-            result.BudgetId.Should().Be(budget.Id);
-            result.TotalProfit.Should().Be(2000.50);
+            result.Id.Should().Be(createdBudgetResult.Id);
+            result.BudgetId.Should().Be(createdBudgetResult.BudgetId);
+            result.TotalProfit.Should().Be(createdBudgetResult.TotalProfit);
+        }
+
+        [Fact]
+        public async Task GetById_ForNonExistingBudgetResultInDatabase_ShouldThrowNotFoundApplicationException()
+        {
+            // Arrange
+            var createdBudgetResult = await _fixture.CreateBudgetResult();
+
+            // Act + Assert
+            await _budgetResultService.Invoking(s => s.GetById(createdBudgetResult.Id + 35))
+            .Should()
+            .ThrowAsync<NotFoundApplicationException>()
+            .WithMessage("BudgetResult not found");
         }
 
         [Fact]
         public async Task GetAll_ShouldReturnAllBudgetResultsFromDatabase()
         {
             // Arrange
-            var budget1 = await _fixture.CreateBudget();
-            var budget2 = await _fixture.CreateBudget();
-            await _budgetResultRepository.Create(new BudgetResult { BudgetId = budget1.Id, TotalProfit = 1000 });
-            await _budgetResultRepository.Create(new BudgetResult { BudgetId = budget2.Id, TotalProfit = 2000 });
+            await _fixture.CreateBudgetResult();
+            await _fixture.CreateBudgetResult();
 
             // Act
-            var results = await _budgetResultService.GetAll();
+            var budgetResults = await _budgetResultService.GetAll();
 
             // Assert
-            results.Should().HaveCountGreaterThanOrEqualTo(2);
+            budgetResults.Should().HaveCountGreaterThanOrEqualTo(2);
         }
 
         [Fact]
         public async Task Update_ShouldModifyBudgetResultInDatabase()
         {
-            // Arrange
+            // Arrange          
+            var budgetResult = await _fixture.CreateBudgetResult();
             var budget = await _fixture.CreateBudget();
-            var resultId = await _budgetResultRepository.Create(new BudgetResult
-            {
-                BudgetId = budget.Id,
-                TotalProfit = 1000
-            });
-
+            var newTotalProfit = Math.Round(_faker.Random.Double(1000, 10000), 2);
             var request = new UpdateBudgetResultRequest
             {
-                Id = resultId,
+                Id = budgetResult.Id,
                 BudgetId = budget.Id,
-                TotalProfit = 1500
+                TotalProfit = newTotalProfit
             };
 
             // Act
             await _budgetResultService.Update(request);
-            var updatedResult = await _budgetResultRepository.ReadById(resultId);
+            var updatedBudgetResult = await _budgetResultService.GetById(budgetResult.Id);
 
             // Assert
-            updatedResult.Should().NotBeNull();
-            updatedResult!.TotalProfit.Should().Be(1500);
+            updatedBudgetResult.Should().NotBeNull();
+            updatedBudgetResult.Id.Should().Be(budgetResult.Id);
+            updatedBudgetResult.BudgetId.Should().Be(budget.Id);
+            updatedBudgetResult.TotalProfit.Should().Be(newTotalProfit);
+        }
+
+        [Fact]
+        public async Task Updating_NonExistingBudgetResult_ShouldThrowEntityUpdateExceptionException()
+        {
+            // Arrange          
+            var budgetResult = await _fixture.CreateBudgetResult();
+            var budget = await _fixture.CreateBudget();
+            var newTotalProfit = Math.Round(_faker.Random.Double(1000, 10000), 2);
+            var request = new UpdateBudgetResultRequest
+            {
+                Id = budgetResult.Id + 35,
+                BudgetId = budget.Id,
+                TotalProfit = newTotalProfit
+            };
+
+            // Act + Assert
+            await _budgetResultService.Invoking(s => s.Update(request))
+            .Should()
+            .ThrowAsync<EntityUpdateException>()
+            .WithMessage("BudgetResult wasn't updated.");
         }
 
         [Fact]
         public async Task Delete_ShouldRemoveBudgetResultFromDatabase()
         {
             // Arrange
-            var budget = await _fixture.CreateBudget();
-            var resultId = await _budgetResultRepository.Create(new BudgetResult
-            {
-                BudgetId = budget.Id,
-                TotalProfit = 1000
-            });
+            var budgetResult = await _fixture.CreateBudgetResult();
 
             // Act
-            await _budgetResultService.Delete(resultId);
-            var deletedResult = await _budgetResultRepository.ReadById(resultId);
+            await _budgetResultService.Delete(budgetResult.Id);
 
             // Assert
-            deletedResult.Should().BeNull();
+            await _budgetResultService.Invoking(s => s.GetById(budgetResult.Id))
+            .Should()
+            .ThrowAsync<NotFoundApplicationException>()
+            .WithMessage("BudgetResult not found");
+        }
+
+        [Fact]
+        public async Task Deleting_NonExistingBudgetResultFromDatabase_ShouldThrowEntityDeleteException()
+        {
+            // Arrange
+            var budgetResult = await _fixture.CreateBudgetResult();
+
+            // Act + Assert
+            await _budgetResultService.Invoking(s => s.Delete(budgetResult.Id + 35))
+            .Should()
+            .ThrowAsync<EntityDeleteException>()
+            .WithMessage("Error when deleting BudgetResult.");
         }
     }
 }

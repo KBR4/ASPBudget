@@ -4,7 +4,6 @@ using Application.Requests;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repositories.BudgetRepository;
-using Infrastructure.Repositories.UserRepository;
 
 namespace Application.Services
 {

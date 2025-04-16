@@ -1,27 +1,30 @@
-﻿using Application.Requests;
+﻿using Application;
+using Application.Exceptions;
+using Application.Requests;
 using Application.Services;
+using Bogus;
+using Bogus.DataSets;
+using Bogus.Extensions;
 using Domain.Entities;
 using FluentAssertions;
 using Infrastructure.Repositories.BudgetRecordRepository;
-using Infrastructure.Repositories.BudgetRepository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ApplicationIntegrationTests.Services
 {
+    [Collection("IntegrationTests")]
     public class BudgetRecordServiceIntegrationTests : IClassFixture<TestingFixture>
     {
         private readonly TestingFixture _fixture;
         private readonly IBudgetRecordService _budgetRecordService;
-        private readonly IBudgetRecordRepository _budgetRecordRepository;
-        private readonly IBudgetRepository _budgetRepository;
+        private readonly Faker _faker;
 
         public BudgetRecordServiceIntegrationTests(TestingFixture fixture)
         {
             _fixture = fixture;
             var scope = fixture.ServiceProvider.CreateScope();
             _budgetRecordService = scope.ServiceProvider.GetRequiredService<IBudgetRecordService>();
-            _budgetRecordRepository = scope.ServiceProvider.GetRequiredService<IBudgetRecordRepository>();
-            _budgetRepository = scope.ServiceProvider.GetRequiredService<IBudgetRepository>();
+            _faker = new Faker();
         }
 
         [Fact]
@@ -29,112 +32,170 @@ namespace ApplicationIntegrationTests.Services
         {
             // Arrange
             var budget = await _fixture.CreateBudget();
+            var name = _faker.Commerce.ProductName();
+            var spendingDate = _faker.Date.Future(3);
+            var budgetId = budget.Id;
+            var total = Math.Round(_faker.Random.Double(1, 1000), 2);
+            var comment = _faker.Rant.Review().ClampLength(10, ValidationConstants.MaxCommentLength);
             var request = new CreateBudgetRecordRequest
             {
-                Name = "Test123",
-                SpendingDate = DateTime.Now,
-                BudgetId = budget.Id,
-                Total = 100.50,
-                Comment = "Comment12345c"
+                Name = name,
+                SpendingDate = spendingDate,
+                BudgetId = budgetId,
+                Total = total,
+                Comment = comment
             };
 
             // Act
-            var recordId = await _budgetRecordService.Add(request);
-            var record = await _budgetRecordRepository.ReadById(recordId);
+            var budgetRecordId = await _budgetRecordService.Add(request);
 
             // Assert
-            record.Should().NotBeNull();
-            record!.Name.Should().Be(request.Name);
-            record.BudgetId.Should().Be(budget.Id);
-            record.Total.Should().Be(request.Total);
+            var budgetRecords = await _budgetRecordService.GetAll();
+            budgetRecords.Should().Contain(q => q.Name == name 
+            && q.SpendingDate.Year == spendingDate.Year
+            && q.SpendingDate.Month == spendingDate.Month
+            && q.SpendingDate.Day == spendingDate.Day
+            && q.BudgetId == budgetId
+            && q.Total == total
+            && q.Comment == comment
+            );
         }
 
         [Fact]
         public async Task GetById_ShouldReturnBudgetRecordFromDatabase()
         {
             // Arrange
-            var budget = await _fixture.CreateBudget();
-            var recordId = await _budgetRecordRepository.Create(new BudgetRecord
-            {
-                Name = "Test123",
-                BudgetId = budget.Id,
-                Total = 200.75
-            });
+            var createdBudgetRecord = await _fixture.CreateBudgetRecord();
 
             // Act
-            var result = await _budgetRecordService.GetById(recordId);
+            var result = await _budgetRecordService.GetById(createdBudgetRecord.Id);
 
             // Assert
             result.Should().NotBeNull();
-            result.Id.Should().Be(recordId);
-            result.Name.Should().Be("Test123");
-            result.BudgetId.Should().Be(budget.Id);
+            result.Id.Should().Be(createdBudgetRecord.Id);
+            result.Name.Should().Be(createdBudgetRecord.Name);
+            result.SpendingDate.Should().Be(createdBudgetRecord.SpendingDate);
+            result.BudgetId.Should().Be(createdBudgetRecord.BudgetId);
+            result.Total.Should().Be(createdBudgetRecord.Total);
+            result.Comment.Should().Be(createdBudgetRecord.Comment);
+        }
+
+        [Fact]
+        public async Task GetById_ForNonExistingBudgetRecordInDatabase_ShouldThrowNotFoundApplicationException()
+        {
+            // Arrange
+            var createdBudgetRecord = await _fixture.CreateBudgetRecord();
+
+            // Act + Assert
+            await _budgetRecordService.Invoking(s => s.GetById(createdBudgetRecord.Id + 35))
+            .Should()
+            .ThrowAsync<NotFoundApplicationException>()
+            .WithMessage("BudgetRecord not found.");
         }
 
         [Fact]
         public async Task GetAll_ShouldReturnAllBudgetRecordsFromDatabase()
         {
             // Arrange
-            var budget = await _fixture.CreateBudget();
-            await _budgetRecordRepository.Create(new BudgetRecord { BudgetId = budget.Id, Name = "Record 1" });
-            await _budgetRecordRepository.Create(new BudgetRecord { BudgetId = budget.Id, Name = "Record 2" });
+            await _fixture.CreateBudgetRecord();
+            await _fixture.CreateBudgetRecord();
 
             // Act
-            var records = await _budgetRecordService.GetAll();
+            var budgetRecords = await _budgetRecordService.GetAll();
 
             // Assert
-            records.Should().HaveCountGreaterThanOrEqualTo(2);
+            budgetRecords.Should().HaveCountGreaterThanOrEqualTo(2);
         }
 
         [Fact]
         public async Task Update_ShouldModifyBudgetRecordInDatabase()
         {
             // Arrange
+            var budgetRecord = await _fixture.CreateBudgetRecord();
             var budget = await _fixture.CreateBudget();
-            var recordId = await _budgetRecordRepository.Create(new BudgetRecord
-            {
-                Name = "Original",
-                BudgetId = budget.Id,
-                Total = 100
-            });
 
+            var newName = "NewBudgetRecordName";
+            var newSpendingDate = new DateTime(2030, 1, 1);
+            var newTotal = 6666.66;
+            var newComment = "NewComment";
             var request = new UpdateBudgetRecordRequest
             {
-                Id = recordId,
-                Name = "Updated",
+                Id = budgetRecord.Id,
+                Name = newName,
+                SpendingDate = newSpendingDate,
+                Total = newTotal,
                 BudgetId = budget.Id,
-                Total = 200,
-                Comment = "Updated comment"
+                Comment = newComment
             };
 
             // Act
             await _budgetRecordService.Update(request);
-            var updatedRecord = await _budgetRecordRepository.ReadById(recordId);
+            var updatedBudgetRecord = await _budgetRecordService.GetById(budgetRecord.Id);
 
             // Assert
-            updatedRecord.Should().NotBeNull();
-            updatedRecord!.Name.Should().Be("Updated");
-            updatedRecord.Total.Should().Be(200);
-            updatedRecord.Comment.Should().Be("Updated comment");
+            updatedBudgetRecord.Should().NotBeNull();
+            updatedBudgetRecord.Name.Should().Be(request.Name);
+            updatedBudgetRecord.SpendingDate.Should().Be(request.SpendingDate);
+            updatedBudgetRecord.Total.Should().Be(request.Total);
+            updatedBudgetRecord.BudgetId.Should().Be(request.BudgetId);
+            updatedBudgetRecord.Comment.Should().Be(request.Comment);
+        }
+
+        [Fact]
+        public async Task Updating_NonExistingBudgetRecord_ShouldThrowEntityUpdateExceptionException()
+        {
+            // Arrange
+            var budgetRecord = await _fixture.CreateBudgetRecord();
+            var budget = await _fixture.CreateBudget();
+
+            var newName = "NewBudgetRecordName";
+            var newSpendingDate = new DateTime(2030, 1, 1);
+            var newTotal = 6666.66;
+            var newComment = "NewComment";
+            var request = new UpdateBudgetRecordRequest
+            {
+                Id = budgetRecord.Id + 35,
+                Name = newName,
+                SpendingDate = newSpendingDate,
+                Total = newTotal,
+                BudgetId = budget.Id,
+                Comment = newComment
+            };
+
+            // Act + Assert
+            await _budgetRecordService.Invoking(s => s.Update(request))
+            .Should()
+            .ThrowAsync<EntityUpdateException>()
+            .WithMessage("BudgetRecord wasn't updated.");
         }
 
         [Fact]
         public async Task Delete_ShouldRemoveBudgetRecordFromDatabase()
         {
             // Arrange
-            var budget = await _fixture.CreateBudget();
-            var recordId = await _budgetRecordRepository.Create(new BudgetRecord
-            {
-                Name = "To Delete",
-                BudgetId = budget.Id
-            });
+            var budgetRecord = await _fixture.CreateBudgetRecord();
 
             // Act
-            await _budgetRecordService.Delete(recordId);
-            var deletedRecord = await _budgetRecordRepository.ReadById(recordId);
+            await _budgetRecordService.Delete(budgetRecord.Id);
 
             // Assert
-            deletedRecord.Should().BeNull();
+            await _budgetRecordService.Invoking(s => s.GetById(budgetRecord.Id))
+            .Should()
+            .ThrowAsync<NotFoundApplicationException>()
+            .WithMessage("BudgetRecord not found.");
+        }
+
+        [Fact]
+        public async Task Deleting_NonExistingBudgetRecordFromDatabase_ShouldThrowEntityDeleteException()
+        {
+            // Arrange
+            var budgetRecord = await _fixture.CreateBudgetRecord();
+
+            // Act + Assert
+            await _budgetRecordService.Invoking(s => s.Delete(budgetRecord.Id + 35))
+            .Should()
+            .ThrowAsync<EntityDeleteException>()
+            .WithMessage("BudgetRecord for deletion not found");
         }
     }
 }

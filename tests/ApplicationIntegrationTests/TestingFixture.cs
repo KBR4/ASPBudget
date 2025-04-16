@@ -15,6 +15,7 @@ using Npgsql;
 using Respawn;
 using System.Reflection;
 using MigrationRunner = Infrastructure.Database.MigrationRunner;
+using Bogus.Extensions;
 
 namespace ApplicationIntegrationTests
 {
@@ -60,7 +61,7 @@ namespace ApplicationIntegrationTests
         public IServiceProvider ServiceProvider { get; }
 
         public async Task InitializeAsync()
-        {
+        {           
             using var scope = ServiceProvider.CreateScope();
             var connection = scope.ServiceProvider.GetRequiredService<NpgsqlConnection>();
             await connection.OpenAsync();
@@ -74,6 +75,7 @@ namespace ApplicationIntegrationTests
                 SchemasToInclude = ["public"],
                 TablesToIgnore = ["VersionInfo"]
             });
+
         }
 
         public async Task<User> CreateUser()
@@ -101,7 +103,10 @@ namespace ApplicationIntegrationTests
 
             var budgetId = await budgetRepository.Create(new Budget
             {
-                Name = _faker.Commerce.ProductName(),
+                Name = _faker.Person.LastName + _faker.Person.FirstName + "LLC",
+                StartDate = _faker.Date.Past(2),
+                FinishDate = _faker.Date.Future(3),
+                Description = _faker.Rant.Review("TV").ClampLength(10, ValidationConstants.MaxDescriptionLength),
                 CreatorId = user.Id
             });
 
@@ -118,8 +123,11 @@ namespace ApplicationIntegrationTests
             var recordId = await budgetRecordRepository.Create(new BudgetRecord
             {
                 Name = _faker.Commerce.ProductName(),
+                CreationDate = DateTime.Now,
+                SpendingDate = _faker.Date.Future(3),
                 BudgetId = budget.Id,
-                Total = _faker.Random.Double(1, 1000)
+                Total = Math.Round(_faker.Random.Double(1, 1000), 2),
+                Comment = _faker.Rant.Review().ClampLength(10, ValidationConstants.MaxCommentLength)
             });
 
             var record = await budgetRecordRepository.ReadById(recordId);
@@ -135,7 +143,7 @@ namespace ApplicationIntegrationTests
             var resultId = await budgetResultRepository.Create(new BudgetResult
             {
                 BudgetId = budget.Id,
-                TotalProfit = _faker.Random.Double(1000, 10000)
+                TotalProfit = Math.Round(_faker.Random.Double(1000, 10000), 2)
             });
 
             var result = await budgetResultRepository.ReadById(resultId);

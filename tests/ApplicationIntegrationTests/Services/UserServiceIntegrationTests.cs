@@ -4,15 +4,17 @@ using FluentAssertions;
 using Bogus;
 using Infrastructure.Repositories.UserRepository;
 using Microsoft.Extensions.DependencyInjection;
+using Application.Exceptions;
+using Azure.Core;
 
 namespace ApplicationIntegrationTests.Services
 {
+    [Collection("IntegrationTests")]
     public class UserServiceIntegrationTests : IClassFixture<TestingFixture>
     {
         private readonly Faker _faker;
         private readonly TestingFixture _fixture;
         private readonly IUserService _userService;
-        private readonly IUserRepository _userRepository;
 
         public UserServiceIntegrationTests(TestingFixture fixture)
         {
@@ -20,29 +22,28 @@ namespace ApplicationIntegrationTests.Services
             _faker = new Faker();
             var scope = fixture.ServiceProvider.CreateScope();
             _userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-            _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
         }
 
         [Fact]
         public async Task Add_ShouldCreateUserInDatabase()
         {
             // Arrange
+            var firstName = _faker.Person.FirstName;
+            var lastName = _faker.Person.LastName;
+            var email = _faker.Person.Email;         
             var request = new CreateUserRequest
             {
-                FirstName = _faker.Person.FirstName,
-                LastName = _faker.Person.LastName,
-                Email = _faker.Person.Email
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email
             };
 
-            // Act
-            var userId = await _userService.Add(request);
-            var user = await _userRepository.ReadById(userId);
+            //Act
+            await _userService.Add(request);
 
-            // Assert
-            user.Should().NotBeNull();
-            user!.FirstName.Should().Be(request.FirstName);
-            user.LastName.Should().Be(request.LastName);
-            user.Email.Should().Be(request.Email);
+            //Assert
+            var users = await _userService.GetAll();
+            users.Should().Contain(q => q.FirstName == firstName && q.LastName == lastName && q.Email == email);
         }
 
         [Fact]
@@ -59,6 +60,20 @@ namespace ApplicationIntegrationTests.Services
             result.Id.Should().Be(createdUser.Id);
             result.FirstName.Should().Be(createdUser.FirstName);
             result.LastName.Should().Be(createdUser.LastName);
+            result.Email.Should().Be(createdUser.Email);
+        }
+
+        [Fact]
+        public async Task GetById_ForNonExistingUserInDatabase_ShouldThrowNotFoundApplicationException()
+        {
+            // Arrange
+            var createdUser = await _fixture.CreateUser();
+
+            // Act + Assert
+            await _userService.Invoking(s => s.GetById(createdUser.Id + 35))
+            .Should()
+            .ThrowAsync<NotFoundApplicationException>()
+            .WithMessage("User not found");
         }
 
         [Fact]
@@ -80,23 +95,49 @@ namespace ApplicationIntegrationTests.Services
         {
             // Arrange
             var user = await _fixture.CreateUser();
+            var newFirstName = "NewUserFirstName";
+            var newLastName = "NewUserLastName";
+            var newEmail = "NewUserEmail@gmail.com";
             var request = new UpdateUserRequest
             {
                 Id = user.Id,
-                FirstName = _faker.Person.FirstName,
-                LastName = _faker.Person.LastName,
-                Email = _faker.Person.Email
+                FirstName = newFirstName,
+                LastName = newLastName,
+                Email = newEmail
             };
 
             // Act
             await _userService.Update(request);
-            var updatedUser = await _userRepository.ReadById(user.Id);
+            var updatedUser = await _userService.GetById(user.Id);
 
             // Assert
             updatedUser.Should().NotBeNull();
-            updatedUser!.FirstName.Should().Be(request.FirstName);
+            updatedUser.FirstName.Should().Be(request.FirstName);
             updatedUser.LastName.Should().Be(request.LastName);
             updatedUser.Email.Should().Be(request.Email);
+        }
+
+        [Fact]
+        public async Task Updating_NonExistingUser_ShouldThrowEntityUpdateExceptionException()
+        {
+            // Arrange
+            var user = await _fixture.CreateUser();
+            var newFirstName = "NewUserFirstName";
+            var newLastName = "NewUserLastName";
+            var newEmail = "NewUserEmail@gmail.com";
+            var request = new UpdateUserRequest
+            {
+                Id = user.Id + 35,
+                FirstName = newFirstName,
+                LastName = newLastName,
+                Email = newEmail
+            };
+
+            // Act + Assert
+            await _userService.Invoking(s => s.Update(request))
+            .Should()
+            .ThrowAsync<EntityUpdateException>()
+            .WithMessage("User wasn't updated.");
         }
 
         [Fact]
@@ -107,10 +148,25 @@ namespace ApplicationIntegrationTests.Services
 
             // Act
             await _userService.Delete(user.Id);
-            var deletedUser = await _userRepository.ReadById(user.Id);
-
+            
             // Assert
-            deletedUser.Should().BeNull();
+            await _userService.Invoking(s => s.GetById(user.Id))
+            .Should()
+            .ThrowAsync<NotFoundApplicationException>()
+            .WithMessage("User not found");
+        }
+
+        [Fact]
+        public async Task Deleting_NonExistingUserFromDatabase_ShouldThrowEntityDeleteException()
+        {
+            // Arrange
+            var user = await _fixture.CreateUser();
+
+            // Act + Assert
+            await _userService.Invoking(s => s.Delete(user.Id + 35))
+            .Should()
+            .ThrowAsync<EntityDeleteException>()
+            .WithMessage("Error when deleting User.");
         }
     }
 }
