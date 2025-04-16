@@ -11,13 +11,11 @@ namespace Application.Services
     public class BudgetResultService : IBudgetResultService
     {
         private IBudgetResultRepository _budgetResultRepository;
-        private IBudgetRepository _budgetRepository;
         private IMapper _mapper;
 
-        public BudgetResultService(IBudgetResultRepository budgetResultRepository, IMapper mapper, IBudgetRepository budgetRepository)
+        public BudgetResultService(IBudgetResultRepository budgetResultRepository, IMapper mapper)
         {
             _budgetResultRepository = budgetResultRepository;
-            _budgetRepository = budgetRepository;
             _mapper = mapper;
         }
 

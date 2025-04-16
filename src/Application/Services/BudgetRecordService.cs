@@ -12,14 +12,12 @@ namespace Application.Services
     public class BudgetRecordService : IBudgetRecordService
     {
         private IBudgetRecordRepository _budgetRecordRepository;
-        private IBudgetRepository _budgetRepository;
         private IMapper _mapper;
 
-        public BudgetRecordService(IBudgetRecordRepository budgetRecordRepository, IMapper mapper, IBudgetRepository budgetRepository)
+        public BudgetRecordService(IBudgetRecordRepository budgetRecordRepository, IMapper mapper)
         {
             _budgetRecordRepository = budgetRecordRepository;
             _mapper = mapper;
-            _budgetRepository = budgetRepository;
         }
 
         public async Task<int> Add(CreateBudgetRecordRequest request)
