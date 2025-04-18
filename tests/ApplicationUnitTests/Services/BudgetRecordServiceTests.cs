@@ -8,6 +8,7 @@ using Infrastructure.Repositories.BudgetRecordRepository;
 using Moq;
 using Bogus;
 using Application.Mappings;
+using Microsoft.Extensions.Logging;
 
 namespace ApplicationUnitTests.Services
 {
@@ -22,9 +23,10 @@ namespace ApplicationUnitTests.Services
         {
             _budgetRecordRepositoryMock = new Mock<IBudgetRecordRepository>();
             _mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
+            var loggerMock = new Mock<ILogger<BudgetRecordService>>();
             _budgetRecordService = new BudgetRecordService(
                 _budgetRecordRepositoryMock.Object,
-                _mapper);
+                _mapper, loggerMock.Object);
             _faker = new Faker();
         }
 

@@ -4,6 +4,7 @@ using Application.Requests;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repositories.BudgetRepository;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services
 {
@@ -11,11 +12,13 @@ namespace Application.Services
     {
         private IBudgetRepository _budgetRepository;
         private IMapper _mapper;
+        private readonly ILogger<BudgetService> _logger;
 
-        public BudgetService(IBudgetRepository budgetRepository, IMapper mapper)
+        public BudgetService(IBudgetRepository budgetRepository, IMapper mapper, ILogger<BudgetService> logger)
         {
             _budgetRepository = budgetRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<int> Add(CreateBudgetRequest request)
@@ -28,7 +31,9 @@ namespace Application.Services
                 Description = request.Description,
                 CreatorId = request.CreatorId
             };
-            return await _budgetRepository.Create(budget);
+            var res = await _budgetRepository.Create(budget);
+            _logger.LogInformation(@"Budget with ID = {0} was created.", res);
+            return res;
         }
 
         public async Task Delete(int id)
@@ -38,6 +43,7 @@ namespace Application.Services
             {
                 throw new EntityDeleteException("Error when deleting Budget.");
             }
+            _logger.LogInformation(@"Budget with ID = {0} was deleted.", id);
         }
 
         public async Task<IEnumerable<BudgetDto>> GetAll()
@@ -74,6 +80,7 @@ namespace Application.Services
             {
                 throw new EntityUpdateException("Budget wasn't updated.");
             }
+            _logger.LogInformation(@"User with ID = {0} was updated.", budget.Id);
         }
     }
 }
