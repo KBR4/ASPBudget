@@ -1,8 +1,10 @@
 ﻿using Bogus;
 using Domain.Entities;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Infrastructure.Repositories.BudgetRepository
 {
+    [ExcludeFromCodeCoverage]
     public class BudgetInMemoryRepository : IBudgetRepository
     {
         private List<Budget> _budgets = new List<Budget>();

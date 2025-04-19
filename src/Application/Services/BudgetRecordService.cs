@@ -6,20 +6,21 @@ using Domain.Entities;
 using Infrastructure.Repositories.BudgetRecordRepository;
 using Infrastructure.Repositories.BudgetRepository;
 using Infrastructure.Repositories.BudgetResultRepository;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services
 {
     public class BudgetRecordService : IBudgetRecordService
     {
         private IBudgetRecordRepository _budgetRecordRepository;
-        private IBudgetRepository _budgetRepository;
         private IMapper _mapper;
+        private readonly ILogger<BudgetRecordService> _logger;
 
-        public BudgetRecordService(IBudgetRecordRepository budgetRecordRepository, IMapper mapper, IBudgetRepository budgetRepository)
+        public BudgetRecordService(IBudgetRecordRepository budgetRecordRepository, IMapper mapper, ILogger<BudgetRecordService> logger)
         {
             _budgetRecordRepository = budgetRecordRepository;
             _mapper = mapper;
-            _budgetRepository = budgetRepository;
+            _logger = logger;
         }
 
         public async Task<int> Add(CreateBudgetRecordRequest request)
@@ -32,7 +33,9 @@ namespace Application.Services
                 Total = request.Total,
                 Comment = request.Comment                          
             };
-            return await _budgetRecordRepository.Create(budgetRecord);
+            var res = await _budgetRecordRepository.Create(budgetRecord);
+            _logger.LogInformation(@"BudgetRecord with ID = {0} was created.", res);
+            return res;
         }
 
         public async Task Delete(int id)
@@ -42,6 +45,7 @@ namespace Application.Services
             {
                 throw new EntityDeleteException("BudgetRecord for deletion not found");
             }
+            _logger.LogInformation(@"BudgetRecord with ID = {0} was deleted.", id);
         }
 
         public async Task<IEnumerable<BudgetRecordDto>> GetAll()
@@ -78,6 +82,7 @@ namespace Application.Services
             {
                 throw new EntityUpdateException("BudgetRecord wasn't updated.");
             }
+            _logger.LogInformation(@"BudgetRecord with ID = {0} was updated.", budgetRecord.Id);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
         {
             budgetRecord.CreationDate = DateTime.Now;
             var budgetRecordId = await _connection.QuerySingleAsync<int>(
-                @"INSERT INTO budgetrecords (name, creation_date, spending_date, budget_id, total, comment)
+                @"INSERT INTO budgetRecords (name, creation_date, spending_date, budget_id, total, comment)
                   VALUES (@Name, @CreationDate, @SpendingDate, @BudgetId, @Total, @Comment)
                   RETURNING id", budgetRecord);
 
@@ -26,7 +26,7 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
         public async Task<bool> Delete(int id)
         {
             var affectedRows = await _connection.ExecuteAsync(
-                @"DELETE FROM budgetrecords WHERE id = @Id", new { Id = id });
+                @"DELETE FROM budgetRecords WHERE id = @Id", new { Id = id });
 
             return affectedRows > 0;
         }
@@ -42,7 +42,7 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
         public async Task<BudgetRecord?> ReadById(int id)
         {
             var budgetRecord = await _connection.QueryFirstOrDefaultAsync<BudgetRecord>(
-                @"SELECT name, creation_date, spending_date, budget_id, total, comment FROM budgetrecords WHERE id = @Id", new { Id = id });
+                @"SELECT id, name, creation_date, spending_date, budget_id, total, comment FROM budgetRecords WHERE id = @Id", new { Id = id });
 
             return budgetRecord;
         }
@@ -50,7 +50,7 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
         public async Task<bool> Update(BudgetRecord budgetRecord)
         {
             var affectedRows = await _connection.ExecuteAsync(
-                @"UPDATE budgetrecords
+                @"UPDATE budgetRecords
                 SET name = @Name, spending_date = @SpendingDate, 
                       budget_id = @BudgetId, total = @Total, comment = @Comment
                 WHERE id = @Id", new { budgetRecord.Id, budgetRecord.Name, budgetRecord.SpendingDate, budgetRecord.BudgetId, budgetRecord.Total, budgetRecord.Comment});

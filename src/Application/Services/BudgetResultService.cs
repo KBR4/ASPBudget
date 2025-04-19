@@ -5,20 +5,20 @@ using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repositories.BudgetRepository;
 using Infrastructure.Repositories.BudgetResultRepository;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services
 {
     public class BudgetResultService : IBudgetResultService
     {
         private IBudgetResultRepository _budgetResultRepository;
-        private IBudgetRepository _budgetRepository;
         private IMapper _mapper;
-
-        public BudgetResultService(IBudgetResultRepository budgetResultRepository, IMapper mapper, IBudgetRepository budgetRepository)
+        private readonly ILogger<BudgetResultService> _logger;
+        public BudgetResultService(IBudgetResultRepository budgetResultRepository, IMapper mapper, ILogger<BudgetResultService> logger)
         {
             _budgetResultRepository = budgetResultRepository;
-            _budgetRepository = budgetRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<int> Add(CreateBudgetResultRequest request)
@@ -28,7 +28,9 @@ namespace Application.Services
                 BudgetId = request.BudgetId,
                 TotalProfit = request.TotalProfit
             };
-            return await _budgetResultRepository.Create(budgetResult);
+            var res = await _budgetResultRepository.Create(budgetResult);
+            _logger.LogInformation(@"BudgetResult with ID = {0} was created.", res);
+            return res;
         }
 
         public async Task Delete(int id)
@@ -38,6 +40,7 @@ namespace Application.Services
             {
                 throw new EntityDeleteException("Error when deleting BudgetResult.");
             }
+            _logger.LogInformation(@"BudgetResult with ID = {0} was deleted.", id);
         }
 
         public async Task<IEnumerable<BudgetResultDto>> GetAll()
@@ -71,6 +74,7 @@ namespace Application.Services
             {
                 throw new EntityUpdateException("BudgetResult wasn't updated.");
             }
+            _logger.LogInformation(@"BudgetResult with ID = {0} was updated.", budgetResult.Id);
         }
     }
 }
