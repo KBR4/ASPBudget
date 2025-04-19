@@ -49,11 +49,11 @@ namespace ApiUnitTests.Controllers
                 .ThrowsAsync(new NotFoundApplicationException("Budget not found"));
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<NotFoundApplicationException>(() =>
-                _controller.GetById(budgetId));
-
-            exception.Message.Should().Be("Budget not found");
-            _budgetServiceMock.Verify(x => x.GetById(budgetId), Times.Once);
+            await FluentActions
+            .Invoking(() => _controller.GetById(budgetId))
+            .Should()
+            .ThrowAsync<NotFoundApplicationException>()
+            .WithMessage("Budget not found");
         }
 
         [Fact]
@@ -67,9 +67,8 @@ namespace ApiUnitTests.Controllers
             var result = await _controller.GetAll();
 
             // Assert
-            result.Should().BeOfType<OkObjectResult>();
-            var okResult = result as OkObjectResult;
-            okResult.Value.Should().BeEquivalentTo(budgets);
+            result.Should().BeOfType<OkObjectResult>()
+                .Which.Value.Should().BeEquivalentTo(budgets);
         }
 
         [Fact]

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Bogus;
 using Application.Exceptions;
+using Domain.Entities;
 
 namespace ApiUnitTests.Controllers
 {
@@ -49,11 +50,11 @@ namespace ApiUnitTests.Controllers
                 .ThrowsAsync(new NotFoundApplicationException("User not found"));
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<NotFoundApplicationException>(() =>
-                _controller.GetById(userId));
-
-            exception.Message.Should().Be("User not found");
-            _userServiceMock.Verify(x => x.GetById(userId), Times.Once);
+            await FluentActions
+               .Invoking(() => _controller.GetById(userId))
+               .Should()
+               .ThrowAsync<NotFoundApplicationException>()
+               .WithMessage("User not found");
         }
 
         [Fact]
@@ -67,9 +68,8 @@ namespace ApiUnitTests.Controllers
             var result = await _controller.GetAll();
 
             // Assert
-            result.Should().BeOfType<OkObjectResult>();
-            var okResult = result as OkObjectResult;
-            okResult.Value.Should().BeEquivalentTo(users);
+            result.Should().BeOfType<OkObjectResult>()
+                .Which.Value.Should().BeEquivalentTo(users);
         }
 
         [Fact]

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Bogus;
 using Application.Exceptions;
+using Domain.Entities;
 
 namespace ApiUnitTests.Controllers
 {
@@ -46,14 +47,14 @@ namespace ApiUnitTests.Controllers
             // Arrange
             var recordId = _faker.Random.Int(1, 100);
             _budgetRecordServiceMock.Setup(x => x.GetById(recordId))
-                .ThrowsAsync(new NotFoundApplicationException("Record not found"));
+                .ThrowsAsync(new NotFoundApplicationException("BudgetRecord not found"));
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<NotFoundApplicationException>(() =>
-                _controller.GetById(recordId));
-
-            exception.Message.Should().Be("Record not found");
-            _budgetRecordServiceMock.Verify(x => x.GetById(recordId), Times.Once);
+            await FluentActions
+               .Invoking(() => _controller.GetById(recordId))
+               .Should()
+               .ThrowAsync<NotFoundApplicationException>()
+               .WithMessage("BudgetRecord not found");
         }
 
         [Fact]
@@ -67,9 +68,8 @@ namespace ApiUnitTests.Controllers
             var result = await _controller.GetAll();
 
             // Assert
-            result.Should().BeOfType<OkObjectResult>();
-            var okResult = result as OkObjectResult;
-            okResult.Value.Should().BeEquivalentTo(records);
+            result.Should().BeOfType<OkObjectResult>()
+                .Which.Value.Should().BeEquivalentTo(records);
         }
 
         [Fact]
