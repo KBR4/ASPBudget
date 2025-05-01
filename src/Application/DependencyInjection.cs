@@ -16,6 +16,8 @@ namespace Application
             services.AddTransient<IBudgetService, BudgetService>();
             services.AddTransient<IBudgetRecordService, BudgetRecordService>();
             services.AddTransient<IBudgetResultService, BudgetResultService>();
+            services.AddTransient<IPasswordHasher, BCryptHasher>();
+            services.AddTransient<IAuthService, AuthService>();
 
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();

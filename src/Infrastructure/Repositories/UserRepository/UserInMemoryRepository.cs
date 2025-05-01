@@ -55,6 +55,12 @@ namespace Infrastructure.Repositories.UserRepository
             return Task.FromResult(user);
         }
 
+        public Task<User?> ReadByEmail(string email)
+        {
+            var user = _users.Find(x => x.Email == email);
+            return Task.FromResult(user);
+        }
+
         public Task<bool> Update(User user)
         {
             var userToUpdate = _users.Find(x => x.Id == user.Id);

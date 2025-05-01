@@ -20,18 +20,18 @@ namespace Application.Services
             _logger = logger;
         }
 
-        public async Task<int> Add(CreateUserRequest request)
-        {
-            var user = new User()
-            {
-                LastName = request.LastName,
-                FirstName = request.FirstName,
-                Email = request.Email,
-            };
-            var res = await _userRepository.Create(user);
-            _logger.LogInformation(@"User with ID = {0} was created.", res);
-            return res;
-        }
+        //public async Task<int> Add(CreateUserRequest request)
+        //{
+        //    var user = new User()
+        //    {
+        //        LastName = request.LastName,
+        //        FirstName = request.FirstName,
+        //        Email = request.Email,
+        //    };
+        //    var res = await _userRepository.Create(user);
+        //    _logger.LogInformation(@"User with ID = {0} was created.", res);
+        //    return res;
+        //}
 
         public async Task Delete(int id)
         {

@@ -13,5 +13,7 @@ namespace Application
         public const int MaxEmailLength = 100;
         public const int MaxDescriptionLength = 255;
         public const int MaxCommentLength = 511;
+        public const int MinPasswordLength = 9;
+        public const int MaxPasswordLength = 128;
     }
 }

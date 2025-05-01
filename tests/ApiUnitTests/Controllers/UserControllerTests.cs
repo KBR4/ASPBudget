@@ -72,24 +72,24 @@ namespace ApiUnitTests.Controllers
                 .Which.Value.Should().BeEquivalentTo(users);
         }
 
-        [Fact]
-        public async Task Add_ValidRequest_ReturnsCreated()
-        {
-            // Arrange
-            var request = new CreateUserRequest();
-            var userId = _faker.Random.Int(1, 100);
-            _userServiceMock.Setup(x => x.Add(request)).ReturnsAsync(userId);
+        //[Fact]
+        //public async Task Add_ValidRequest_ReturnsCreated()
+        //{
+        //    // Arrange
+        //    var request = new CreateUserRequest();
+        //    var userId = _faker.Random.Int(1, 100);
+        //    _userServiceMock.Setup(x => x.Add(request)).ReturnsAsync(userId);
 
-            // Act
-            var result = await _controller.Add(request);
+        //    // Act
+        //    var result = await _controller.Add(request);
 
-            // Assert
-            result.Should().BeOfType<CreatedAtActionResult>();
-            var createdResult = result as CreatedAtActionResult;
-            createdResult.ActionName.Should().Be(nameof(_controller.GetById));
-            createdResult.RouteValues["id"].Should().Be(userId);
-            createdResult.Value.Should().BeEquivalentTo(new { Id = userId });
-        }
+        //    // Assert
+        //    result.Should().BeOfType<CreatedAtActionResult>();
+        //    var createdResult = result as CreatedAtActionResult;
+        //    createdResult.ActionName.Should().Be(nameof(_controller.GetById));
+        //    createdResult.RouteValues["id"].Should().Be(userId);
+        //    createdResult.Value.Should().BeEquivalentTo(new { Id = userId });
+        //}
 
         [Fact]
         public async Task Update_ValidRequest_ReturnsOk()

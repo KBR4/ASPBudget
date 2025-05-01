@@ -51,16 +51,8 @@ namespace ApplicationIntegrationTests.Services
             budgets.Should().Contain(q => q.Name == name
                 && q.StartDate!.Date == startDate.Date
                 && q.FinishDate.Value.Date == finishDate.Date
-                //q.StartDate == startDate && q.FinishDate == finishDate &&
-                //&& q.StartDate!.Year == startDate.Year
-                //&& q.StartDate.Month == startDate.Month
-                //&& q.StartDate.Day == startDate.Day
-                //&& q.FinishDate!.Value.Year == finishDate.Year
-                //&& q.FinishDate.Value.Month == finishDate.Month
-                //&& q.FinishDate.Value.Day == finishDate.Day
                 && q.Description == description 
                 && q.CreatorId == user.Id);
-            //из-за особенностей формата даты в постгресе приходится сравнивать вот так, просто равенство не работает (найти нормальное приведение?)
         }
 
         [Fact]

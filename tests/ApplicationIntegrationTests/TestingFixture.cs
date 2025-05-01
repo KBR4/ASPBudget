@@ -16,6 +16,7 @@ using Respawn;
 using System.Reflection;
 using MigrationRunner = Infrastructure.Database.MigrationRunner;
 using Bogus.Extensions;
+using Application.Services;
 
 namespace ApplicationIntegrationTests
 {
@@ -78,16 +79,19 @@ namespace ApplicationIntegrationTests
 
         }
 
-        public async Task<User> CreateUser()
+        public async Task<User> CreateUser(string password = null)
         {
             using var scope = ServiceProvider.CreateScope();
             var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+            var userPassword = password ?? "ValidPass1!";
 
             var userId = await userRepository.Create(new User
             {
                 FirstName = _faker.Name.FirstName(),
                 LastName = _faker.Name.LastName(),
-                Email = _faker.Person.Email
+                Email = $"test-{Guid.NewGuid()}@example.com",
+                PasswordHash = passwordHasher.HashPassword(userPassword)
             });
 
             var user = await userRepository.ReadById(userId);
