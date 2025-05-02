@@ -44,8 +44,6 @@ namespace Infrastructure
 
             services.AddScoped<Database.MigrationRunner>();
             DapperConfig.Configure();
-            SqlMapper.AddTypeHandler(new UserRolesTypeHandler());
-
 
             return services;
         }

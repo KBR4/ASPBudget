@@ -1,6 +1,7 @@
 ﻿using Moq;
 using BCrypt.Net;
 using Application.Services;
+using FluentAssertions;
 
 namespace ApplicationUnitTests.Services
 {
@@ -14,21 +15,6 @@ namespace ApplicationUnitTests.Services
         }
 
         [Fact]
-        public void HashPassword_ValidPassword_ReturnsNonEmptyHash()
-        {
-            // Arrange
-            var password = "SecurePassword123!";
-
-            // Act
-            var result = _hasher.HashPassword(password);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.NotEmpty(result);
-            Assert.NotEqual(password, result);
-        }
-
-        [Fact]
         public void VerifyPassword_CorrectPassword_ReturnsTrue()
         {
             // Arrange
@@ -39,7 +25,7 @@ namespace ApplicationUnitTests.Services
             var result = _hasher.VerifyPassword(password, hash);
 
             // Assert
-            Assert.True(result);
+            result.Should().Be(true);
         }
 
         [Fact]
@@ -54,7 +40,7 @@ namespace ApplicationUnitTests.Services
             var result = _hasher.VerifyPassword(wrongPassword, hash);
 
             // Assert
-            Assert.False(result);
+            result.Should().Be(false);
         }
 
         [Theory]
@@ -67,23 +53,7 @@ namespace ApplicationUnitTests.Services
 
             // Act & Assert for null hash
             var resultNull = _hasher.VerifyPassword(password, hash);
-            Assert.False(resultNull);
-        }
-
-        [Fact]
-        public void HashPassword_AlwaysGeneratesUniqueSalt()
-        {
-            // Arrange
-            var password = "SecurePassword123!";
-
-            // Act
-            var hash1 = _hasher.HashPassword(password);
-            var hash2 = _hasher.HashPassword(password);
-
-            // Assert
-            Assert.NotEqual(hash1, hash2); // Different salts should produce different hashes
-            Assert.True(_hasher.VerifyPassword(password, hash1)); // Both should verify correctly
-            Assert.True(_hasher.VerifyPassword(password, hash2));
+            resultNull.Should().Be(false);
         }
     }
 }

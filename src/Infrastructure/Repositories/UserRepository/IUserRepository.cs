@@ -10,6 +10,5 @@ namespace Infrastructure.Repositories.UserRepository
         public Task<int> Create(User user);
         public Task<bool> Update(User user);
         public Task<bool> Delete(int id);
-        
     }
 }

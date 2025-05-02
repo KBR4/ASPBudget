@@ -6,6 +6,7 @@ using Domain.Enums;
 using Infrastructure.Repositories.UserRepository;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using FluentAssertions;
 
 namespace ApplicationUnitTests.Services
 {
@@ -25,7 +26,6 @@ namespace ApplicationUnitTests.Services
 
         private void SetupJwtConfig()
         {
-            var configSectionMock = new Mock<IConfigurationSection>();
             _configMock.Setup(x => x["JwtSettings:Secret"]).Returns("super-secret-key-at-least-32-chars");
             _configMock.Setup(x => x["JwtSettings:Issuer"]).Returns("test-issuer");
             _configMock.Setup(x => x["JwtSettings:Audience"]).Returns("test-audience");
@@ -44,7 +44,7 @@ namespace ApplicationUnitTests.Services
                 LastName = "xyz"
             };
 
-            var user = new User { Id = 1 };
+            var user = new User { Id = 1, FirstName = "xyz", LastName = "abc", Email = "abc@mail.com" };
             _mapperMock.Setup(x => x.Map<User>(request)).Returns(user);
             _hasherMock.Setup(x => x.HashPassword(request.Password)).Returns("hashed-pass");
             _userRepoMock.Setup(x => x.Create(user)).ReturnsAsync(1);
@@ -53,7 +53,7 @@ namespace ApplicationUnitTests.Services
             var result = await _authService.Register(request);
 
             // Assert
-            Assert.Equal(1, result);
+            result.Should().Be(1);
             _mapperMock.Verify(x => x.Map<User>(request), Times.Once);
             _hasherMock.Verify(x => x.HashPassword(request.Password), Times.Once);
             _userRepoMock.Verify(x => x.Create(It.Is<User>(u =>
@@ -88,7 +88,8 @@ namespace ApplicationUnitTests.Services
             var result = await _authService.Login(request);
 
             // Assert
-            Assert.NotNull(result.Token);
+            result.Should().NotBeNull();
+            result.Token.Should().NotBeNullOrEmpty();
             _userRepoMock.Verify(x => x.ReadByEmail(request.Email), Times.Once);
             _hasherMock.Verify(x => x.VerifyPassword(request.Password, user.PasswordHash), Times.Once);
         }
@@ -103,12 +104,13 @@ namespace ApplicationUnitTests.Services
                 Password = "WrongPass"
             };
 
-            var user = new User { PasswordHash = "hashed-pass" };
+            var user = new User { FirstName = "xyz", LastName = "abc", Email = "abc@mail.com", PasswordHash = "hashed-pass" };
             _userRepoMock.Setup(x => x.ReadByEmail(request.Email)).ReturnsAsync(user);
             _hasherMock.Setup(x => x.VerifyPassword(request.Password, user.PasswordHash)).Returns(false);
 
             // Act & Assert
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _authService.Login(request));
+            await _authService.Invoking(x => x.Login(request))
+                .Should().ThrowAsync<UnauthorizedAccessException>();
         }
 
         [Fact]
@@ -124,7 +126,8 @@ namespace ApplicationUnitTests.Services
             _userRepoMock.Setup(x => x.ReadByEmail(request.Email)).ReturnsAsync((User)null);
 
             // Act & Assert
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _authService.Login(request));
+            await _authService.Invoking(x => x.Login(request))
+                .Should().ThrowAsync<UnauthorizedAccessException>();
         }
 
         [Fact]
@@ -144,19 +147,19 @@ namespace ApplicationUnitTests.Services
             var token = _authService.GenerateJwtToken(user);
 
             // Assert
-            Assert.NotNull(token);
-            Assert.NotEmpty(token);
+            token.Should().NotBeNullOrEmpty();
         }
 
         [Fact]
         public void GenerateJwtToken_MissingConfig_ThrowsException()
         {
             // Arrange
-            var user = new User();
+            var user = new User { FirstName = "xyz", LastName = "abc", Email = "abc@mail.com" };
             _configMock.Setup(x => x["JwtSettings:Secret"]).Returns((string)null);
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _authService.GenerateJwtToken(user));
+            _authService.Invoking(x => x.GenerateJwtToken(user))
+                .Should().Throw<ArgumentNullException>();
         }
     }
 }

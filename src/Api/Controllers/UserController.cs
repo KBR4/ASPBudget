@@ -4,6 +4,7 @@ using Application.Services;
 using Application.Requests;
 using Api.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Domain.Enums;
 
 namespace Api.Controllers
 {
@@ -48,6 +49,13 @@ namespace Api.Controllers
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateUserRequest request)
         {
+            var currentUserId = User.GetUserId();
+            var currentUserRole = User.GetRole();
+           
+            if (currentUserRole != UserRoles.Admin && currentUserId != request.Id)
+            {
+                return Forbid();
+            }
             await _userService.Update(request);
             return Ok();
         }

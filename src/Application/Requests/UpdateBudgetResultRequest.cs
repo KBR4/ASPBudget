@@ -8,7 +8,6 @@ namespace Application.Requests
         public int BudgetId { get; set; }
         public double TotalProfit { get; set; }
     }
-
     public class UpdateBudgetResultRequestValidator : AbstractValidator<UpdateBudgetResultRequest>
     {
         public UpdateBudgetResultRequestValidator()

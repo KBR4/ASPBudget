@@ -19,11 +19,8 @@ namespace Infrastructure.Repositories.UserRepository
             var faker = new Faker();
             for (int i = 0; i < 10; i++)
             {
-                var user = new User();
+                var user = new User{ FirstName = faker.Person.FirstName, LastName = faker.Person.LastName, Email = faker.Person.Email };
                 user.Id = i + 1;
-                user.LastName = faker.Person.LastName;
-                user.FirstName = faker.Person.FirstName;
-                user.Email = faker.Person.Email;
                 _users.Add(user);
             }
         }

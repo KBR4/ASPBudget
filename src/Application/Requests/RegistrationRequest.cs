@@ -20,9 +20,9 @@ namespace Application.Requests
                     .NotEmpty()
                     .MinimumLength(ValidationConstants.MinPasswordLength)
                     .MaximumLength(ValidationConstants.MaxPasswordLength)
-                    .Must(PasswordValidationCheck.PasswordContainsDigit)
-                    .Must(PasswordValidationCheck.PasswordContainsUpperAndLower)
-                    .Must(PasswordValidationCheck.PasswordNotContainsSpaces);
+                    .Must(PasswordValidationCheck.PasswordContainsDigit).WithMessage("Password must contain digit")
+                    .Must(PasswordValidationCheck.PasswordContainsUpperAndLower).WithMessage("Password must contain both upper and lowercase letters")
+                    .Must(PasswordValidationCheck.PasswordNotContainsSpaces).WithMessage("Password must not contain spaces");
         }
     }
 }

@@ -196,6 +196,7 @@ namespace ApplicationUnitTests.Requests
             // Assert
             result.ShouldHaveValidationErrorFor(x => x.Password);
         }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]

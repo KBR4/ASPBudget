@@ -45,6 +45,7 @@ namespace Infrastructure.Repositories.UserRepository
 
             return user;
         }
+
         public async Task<User?> ReadByEmail(string email)
         {
             const string query = "SELECT * FROM users WHERE email = @Email";
@@ -54,7 +55,7 @@ namespace Infrastructure.Repositories.UserRepository
         public async Task<bool> Update(User user)
         {
             const string query = @"UPDATE users
-                  SET last_name = @LastName, first_name = @FirstName, email = @Email, password_hash = @PasswordHash, role = @Role::user_role 
+                  SET last_name = @LastName, first_name = @FirstName, email = @Email
                   WHERE id = @Id";
             var affectedRows = await _connection.ExecuteAsync(query, user.AsDapperParams());
             return affectedRows > 0;

@@ -48,6 +48,7 @@ namespace Application
             }
             return !password.Any(c => char.IsWhiteSpace(c));
         }
+
         public static bool PasswordContainsOnlyAllowedChars(string password)
         {
             if (string.IsNullOrEmpty(password))

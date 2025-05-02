@@ -8,6 +8,9 @@ using Moq;
 using Bogus;
 using Application.Exceptions;
 using Domain.Entities;
+using Domain.Enums;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace ApiUnitTests.Controllers
 {
@@ -29,7 +32,12 @@ namespace ApiUnitTests.Controllers
         {
             // Arrange
             var userId = _faker.Random.Int(1, 100);
-            var userDto = new UserDto { Id = userId };
+            var userDto = new UserDto { 
+                Id = userId, 
+                LastName = _faker.Person.LastName, 
+                FirstName = _faker.Person.FirstName, 
+                Email = _faker.Person.Email 
+            };
             _userServiceMock.Setup(x => x.GetById(userId)).ReturnsAsync(userDto);
 
             // Act
@@ -61,7 +69,7 @@ namespace ApiUnitTests.Controllers
         public async Task GetAll_WithUsers_ReturnsOkWithUsers()
         {
             // Arrange
-            var users = new List<UserDto> { new UserDto { Id = 1 }, new UserDto { Id = 2 } };
+            var users = new List<UserDto> { new UserDto { Id = 1, FirstName = "xyz", LastName = "abc", Email = "abc@mail.com" }, new UserDto { Id = 2, FirstName = "xyz", LastName = "abc", Email = "abc2@mail.com" } };
             _userServiceMock.Setup(x => x.GetAll()).ReturnsAsync(users);
 
             // Act
@@ -70,39 +78,6 @@ namespace ApiUnitTests.Controllers
             // Assert
             result.Should().BeOfType<OkObjectResult>()
                 .Which.Value.Should().BeEquivalentTo(users);
-        }
-
-        //[Fact]
-        //public async Task Add_ValidRequest_ReturnsCreated()
-        //{
-        //    // Arrange
-        //    var request = new CreateUserRequest();
-        //    var userId = _faker.Random.Int(1, 100);
-        //    _userServiceMock.Setup(x => x.Add(request)).ReturnsAsync(userId);
-
-        //    // Act
-        //    var result = await _controller.Add(request);
-
-        //    // Assert
-        //    result.Should().BeOfType<CreatedAtActionResult>();
-        //    var createdResult = result as CreatedAtActionResult;
-        //    createdResult.ActionName.Should().Be(nameof(_controller.GetById));
-        //    createdResult.RouteValues["id"].Should().Be(userId);
-        //    createdResult.Value.Should().BeEquivalentTo(new { Id = userId });
-        //}
-
-        [Fact]
-        public async Task Update_ValidRequest_ReturnsOk()
-        {
-            // Arrange
-            var request = new UpdateUserRequest();
-
-            // Act
-            var result = await _controller.Update(request);
-
-            // Assert
-            result.Should().BeOfType<OkResult>();
-            _userServiceMock.Verify(x => x.Update(request), Times.Once);
         }
 
         [Fact]
@@ -117,6 +92,132 @@ namespace ApiUnitTests.Controllers
             // Assert
             result.Should().BeOfType<NoContentResult>();
             _userServiceMock.Verify(x => x.Delete(userId), Times.Once);
+        }
+
+        [Fact]
+        public async Task Update_WhenAdminUpdatesAnyUser_ShouldSucceed()
+        {
+            // Arrange
+            SetCurrentUser(1, UserRoles.Admin);
+            var request = CreateTestRequest(2);
+
+            // Act
+            var result = await _controller.Update(request);
+
+            // Assert
+            result.Should().BeOfType<OkResult>();
+            _userServiceMock.Verify(x => x.Update(request), Times.Once);
+        }
+
+        [Fact]
+        public async Task Update_WhenUserUpdatesSelf_ShouldSucceed()
+        {
+            // Arrange
+            var userId = 1;
+            SetCurrentUser(userId, UserRoles.User);
+            var request = CreateTestRequest(userId);
+
+            // Act
+            var result = await _controller.Update(request);
+
+            // Assert
+            result.Should().BeOfType<OkResult>();
+            _userServiceMock.Verify(x => x.Update(request), Times.Once);
+        }
+
+        [Fact]
+        public async Task Update_WhenUserUpdatesOther_ShouldForbid()
+        {
+            // Arrange
+            SetCurrentUser(1, UserRoles.User);
+            var request = CreateTestRequest(2);
+
+            // Act
+            var result = await _controller.Update(request);
+
+            // Assert
+            result.Should().BeOfType<ForbidResult>();
+            _userServiceMock.Verify(x => x.Update(It.IsAny<UpdateUserRequest>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Update_WhenUnauthenticated_ShouldThrow()
+        {
+            // Arrange
+            _controller.ControllerContext = new ControllerContext();
+            var request = CreateTestRequest(1);
+
+            // Act & Assert
+            await FluentActions.Awaiting(() => _controller.Update(request))
+                .Should().ThrowAsync<NullReferenceException>();
+        }
+
+        [Fact]
+        public async Task Update_WhenServiceFails_ShouldPropagateException()
+        {
+            // Arrange
+            SetCurrentUser(1, UserRoles.Admin);
+            var request = CreateTestRequest(1);
+            _userServiceMock.Setup(x => x.Update(request))
+                .ThrowsAsync(new InvalidOperationException("Database error"));
+
+            // Act & Assert
+            await FluentActions.Awaiting(() => _controller.Update(request))
+                .Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Database error");
+        }
+
+        [Theory]
+        [InlineData(1, 1, UserRoles.User, true)]  // User updates self
+        [InlineData(1, 2, UserRoles.Admin, true)] // Admin updates other
+        [InlineData(1, 2, UserRoles.User, false)] // User tries update other
+        public async Task Update_AuthorizationScenarios(
+            int currentUserId, int requestId,
+            UserRoles role, bool shouldSucceed)
+        {
+            // Arrange
+            SetCurrentUser(currentUserId, role);
+            var request = CreateTestRequest(requestId);
+
+            // Act
+            var result = await _controller.Update(request);
+
+            // Assert
+            if (shouldSucceed)
+            {
+                result.Should().BeOfType<OkResult>();
+                _userServiceMock.Verify(x => x.Update(request), Times.Once);
+            }
+            else
+            {
+                result.Should().BeOfType<ForbidResult>();
+                _userServiceMock.Verify(x => x.Update(It.IsAny<UpdateUserRequest>()), Times.Never);
+            }
+        }
+
+        private UpdateUserRequest CreateTestRequest(int id) => new()
+        {
+            Id = id,
+            LastName = "abc",
+            FirstName = "xyz",
+            Email = "abcxyz123@example.com"
+        };
+
+        private void SetCurrentUser(int userId, UserRoles role)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Role, role.ToString())
+            };
+            var identity = new ClaimsIdentity(claims, "TestAuth");
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(identity)
+                }
+            };
         }
     }
 }

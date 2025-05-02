@@ -11,7 +11,6 @@ namespace Application.Requests
         public string Description { get; set; }
         public int CreatorId { get; set; }
     }
-    
     public class UpdateBudgetRequestValidator : AbstractValidator<UpdateBudgetRequest>
     {
         public UpdateBudgetRequestValidator()

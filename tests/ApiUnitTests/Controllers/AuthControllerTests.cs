@@ -3,9 +3,9 @@ using Application.Requests;
 using Application.Responses;
 using Application.Services;
 using Bogus;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using Moq;
 
 namespace ApiUnitTests.Controllers
@@ -14,11 +14,18 @@ namespace ApiUnitTests.Controllers
     {
         private readonly Mock<IAuthService> _authServiceMock;
         private readonly AuthController _controller;
+        private readonly Faker _faker = new();
 
         public AuthControllerTests()
         {
             _authServiceMock = new Mock<IAuthService>();
-            _controller = new AuthController(_authServiceMock.Object);
+            _controller = new AuthController(_authServiceMock.Object)
+            {
+                ControllerContext = new ControllerContext()
+                {
+                    HttpContext = new DefaultHttpContext()
+                }
+            };
         }
 
         [Fact]
@@ -27,9 +34,9 @@ namespace ApiUnitTests.Controllers
             // Arrange
             var request = new RegistrationRequest
             {
-                FirstName = "John",
-                LastName = "Doe",
-                Email = "test@example.com",
+                FirstName = _faker.Name.FirstName(),
+                LastName = _faker.Name.LastName(),
+                Email = _faker.Internet.Email(),
                 Password = "ValidPass1!"
             };
             const int userId = 1;
@@ -39,16 +46,17 @@ namespace ApiUnitTests.Controllers
             var result = await _controller.Register(request);
 
             // Assert
-            var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
-            Assert.Equal(nameof(UserController.GetById), createdAtActionResult.ActionName);
-            Assert.Equal("User", createdAtActionResult.ControllerName);
-            Assert.Equal(userId, createdAtActionResult.RouteValues["id"]);
+            result.Should().BeOfType<CreatedAtActionResult>()
+                .Which.Should().Satisfy<CreatedAtActionResult>(res =>
+                {
+                    res.ActionName.Should().Be(nameof(UserController.GetById));
+                    res.ControllerName.Should().Be("User");
+                    res.RouteValues["id"].Should().Be(userId);
 
-            var valueType = createdAtActionResult.Value.GetType();
-            var idProperty = valueType.GetProperty("Id");
-            Assert.NotNull(idProperty);
-            var idValue = (int)idProperty.GetValue(createdAtActionResult.Value);
-            Assert.Equal(userId, idValue);
+                    var value = res.Value;
+                    value.GetType().GetProperty("Id").Should().NotBeNull();
+                    value.GetType().GetProperty("Id").GetValue(value).Should().Be(userId);
+                });
 
             _authServiceMock.Verify(x => x.Register(request), Times.Once);
         }
@@ -59,16 +67,18 @@ namespace ApiUnitTests.Controllers
             // Arrange
             var request = new RegistrationRequest
             {
-                FirstName = "John",
-                LastName = "Doe",
-                Email = "test@example.com",
+                FirstName = _faker.Name.FirstName(),
+                LastName = _faker.Name.LastName(),
+                Email = _faker.Internet.Email(),
                 Password = "ValidPass1!"
             };
             _authServiceMock.Setup(x => x.Register(request))
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => _controller.Register(request));
+            await _controller.Invoking(async x => await x.Register(request))
+                .Should().ThrowAsync<Exception>()
+                .WithMessage("Database error");
         }
 
         [Fact]
@@ -77,7 +87,7 @@ namespace ApiUnitTests.Controllers
             // Arrange
             var request = new LoginRequest
             {
-                Email = "test@example.com",
+                Email = _faker.Internet.Email(),
                 Password = "ValidPass1!"
             };
             var expectedResponse = new LoginResponse { Token = "test-token" };
@@ -87,8 +97,9 @@ namespace ApiUnitTests.Controllers
             var result = await _controller.Login(request);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(expectedResponse, okResult.Value);
+            result.Should().BeOfType<OkObjectResult>()
+                .Which.Value.Should().BeEquivalentTo(expectedResponse);
+
             _authServiceMock.Verify(x => x.Login(request), Times.Once);
         }
 
@@ -98,14 +109,15 @@ namespace ApiUnitTests.Controllers
             // Arrange
             var request = new LoginRequest
             {
-                Email = "wrong@example.com",
+                Email = _faker.Internet.Email(),
                 Password = "WrongPass1!"
             };
             _authServiceMock.Setup(x => x.Login(request))
-                .ThrowsAsync(new UnauthorizedAccessException());
+                .ThrowsAsync(new UnauthorizedAccessException("Invalid credentials"));
 
             // Act & Assert
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _controller.Login(request));
+            await _controller.Invoking(async x => await x.Login(request))
+                .Should().ThrowAsync<UnauthorizedAccessException>();
         }
     }
 }

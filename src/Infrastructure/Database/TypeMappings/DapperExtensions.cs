@@ -20,7 +20,6 @@ namespace Infrastructure.Database.TypeMappings
                         ? c.Value.ToString()
                         : c.Value
                         );
-
         }
     }
 }

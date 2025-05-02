@@ -24,6 +24,7 @@ namespace Application.Services
 
             return userId;
         }
+
         public async Task<LoginResponse> Login(LoginRequest request)
         {
             var user = await userRepository.ReadByEmail(request.Email);
@@ -34,12 +35,13 @@ namespace Application.Services
             var passwordVerified = hasher.VerifyPassword(request.Password, user.PasswordHash);
             if (!passwordVerified)
             {
-                throw new UnauthorizedAccessException(); //401 - поймать в хэндлере и вывести 401
+                throw new UnauthorizedAccessException();
             }
             var token = GenerateJwtToken(user);
 
             return new LoginResponse() { Token = token };
         }
+
         public string GenerateJwtToken(User user)
         {
             var jwtSecret = configuration["JwtSettings:Secret"] ?? throw new ArgumentNullException("JwtSettings:Secret");
