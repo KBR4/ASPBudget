@@ -34,35 +34,6 @@ namespace ApplicationUnitTests.Services
         }
 
         [Fact]
-        public async Task Add_ValidRequest_ReturnsUserId()
-        {
-            // Arrange
-            var userId = _faker.Random.Int(1, 100);
-            var request = new CreateUserRequest
-            {
-                FirstName = _faker.Person.FirstName,
-                LastName = _faker.Person.LastName,
-                Email = _faker.Person.Email
-            };
-
-            _userRepositoryMock.Setup(x => x.Create(It.Is<User>(u =>
-                    u.FirstName == request.FirstName &&
-                    u.LastName == request.LastName &&
-                    u.Email == request.Email)))
-                .ReturnsAsync(userId);
-
-            // Act
-            var result = await _userService.Add(request);
-
-            // Assert
-            result.Should().Be(userId);
-            _userRepositoryMock.Verify(x => x.Create(It.Is<User>(u =>
-                u.FirstName == request.FirstName &&
-                u.LastName == request.LastName &&
-                u.Email == request.Email)), Times.Once);
-        }
-
-        [Fact]
         public async Task GetById_ExistingUser_ReturnsUserDto()
         {
             // Arrange

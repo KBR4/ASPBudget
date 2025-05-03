@@ -19,9 +19,8 @@ namespace Infrastructure.Repositories.BudgetRepository
             var faker = new Faker();
             for (int i = 0; i < 10; i++)
             {
-                var budget = new Budget();
+                var budget = new Budget { Name = faker.Commerce.Product() };
                 budget.Id = i + 1;
-                budget.Name = faker.Commerce.Product();
                 budget.StartDate = faker.Date.Future(2, DateTime.Now);
                 budget.FinishDate = faker.Date.Future(5, budget.StartDate);
                 budget.Description = faker.Rant.Review();

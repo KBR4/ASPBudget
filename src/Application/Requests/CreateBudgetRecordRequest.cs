@@ -10,8 +10,8 @@ namespace Application.Requests
         public int BudgetId { get; set; }
         public double Total { get; set; }
         public string Comment { get; set; }
-    }
-    
+    }   
+
     public class CreateBudgetRecordRequestValidator : AbstractValidator<CreateBudgetRecordRequest>
     {
         public CreateBudgetRecordRequestValidator()

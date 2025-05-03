@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Application.Dtos;
 using Application.Services;
 using Application.Requests;
+using Api.Extensions;
+using Microsoft.AspNetCore.Authorization;
+using Domain.Enums;
 
 namespace Api.Controllers
 {
@@ -16,6 +19,18 @@ namespace Api.Controllers
             _userService = userService;
         }
 
+        [HttpGet("userInfo")]
+        public async Task<IActionResult> GetUserInfo()
+        {
+            var userId = User.GetUserId();
+            if (!userId.HasValue)
+            {
+                return NotFound();
+            }
+            var user = await _userService.GetById(userId.Value);
+            return Ok(user);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -24,28 +39,29 @@ namespace Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {
             var users = await _userService.GetAll();
             return Ok(users);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Add([FromBody] CreateUserRequest request)
-        {
-            var userId = await _userService.Add(request);
-            var res = new { Id = userId };
-            return CreatedAtAction(nameof(GetById), new { id = userId }, res);
-        }
-
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateUserRequest request)
         {
+            var currentUserId = User.GetUserId();
+            var currentUserRole = User.GetRole();
+           
+            if (currentUserRole != UserRoles.Admin && currentUserId != request.Id)
+            {
+                return Forbid();
+            }
             await _userService.Update(request);
             return Ok();
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             await _userService.Delete(id);

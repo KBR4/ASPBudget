@@ -22,7 +22,7 @@ namespace Infrastructure.Repositories.BudgetResultRepository
                 var budgetResult = new BudgetResult();
                 budgetResult.Id = i + 1;
                 budgetResult.BudgetId = i + 1;
-                var budget = new Budget();
+                var budget = new Budget {Name = "budget" };
                 budgetResult.TotalProfit = Convert.ToDouble(faker.Commerce.Price(1, 1000));
                 _budgetResults.Add(budgetResult);
             }

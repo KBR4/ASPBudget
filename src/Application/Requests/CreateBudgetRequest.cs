@@ -10,7 +10,7 @@ namespace Application.Requests
         public string Description { get; set; }
         public int CreatorId { get; set; }
     }
-    
+
     public class CreateBudgetRequestValidator : AbstractValidator<CreateBudgetRequest>
     {
         public CreateBudgetRequestValidator()

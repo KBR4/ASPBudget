@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Npgsql;
 using FluentMigrator.Runner;
 using System.Reflection;
+using Dapper;
+using Infrastructure.Database.TypeMappings;
 
 namespace Infrastructure
 {

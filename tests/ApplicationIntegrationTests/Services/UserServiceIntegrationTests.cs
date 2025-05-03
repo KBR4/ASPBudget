@@ -25,28 +25,6 @@ namespace ApplicationIntegrationTests.Services
         }
 
         [Fact]
-        public async Task Add_ShouldCreateUserInDatabase()
-        {
-            // Arrange
-            var firstName = _faker.Person.FirstName;
-            var lastName = _faker.Person.LastName;
-            var email = _faker.Person.Email;         
-            var request = new CreateUserRequest
-            {
-                FirstName = firstName,
-                LastName = lastName,
-                Email = email
-            };
-
-            //Act
-            await _userService.Add(request);
-
-            //Assert
-            var users = await _userService.GetAll();
-            users.Should().Contain(q => q.FirstName == firstName && q.LastName == lastName && q.Email == email);
-        }
-
-        [Fact]
         public async Task GetById_ShouldReturnUserFromDatabase()
         {
             // Arrange
