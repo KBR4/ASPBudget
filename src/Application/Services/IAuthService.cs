@@ -8,6 +8,5 @@ namespace Application.Services
     {
         Task<int> Register(RegistrationRequest request);
         Task<LoginResponse> Login(LoginRequest request);
-        string GenerateJwtToken(User user);
     }
 }

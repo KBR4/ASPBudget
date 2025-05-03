@@ -42,7 +42,7 @@ namespace Application.Services
             return new LoginResponse() { Token = token };
         }
 
-        public string GenerateJwtToken(User user)
+        private string GenerateJwtToken(User user)
         {
             var jwtSecret = configuration["JwtSettings:Secret"] ?? throw new ArgumentNullException("JwtSettings:Secret");
             var jwtIssuer = configuration["JwtSettings:Issuer"] ?? throw new ArgumentNullException("JwtSettings:Issuer");

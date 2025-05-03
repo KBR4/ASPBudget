@@ -129,37 +129,5 @@ namespace ApplicationUnitTests.Services
             await _authService.Invoking(x => x.Login(request))
                 .Should().ThrowAsync<UnauthorizedAccessException>();
         }
-
-        [Fact]
-        public void GenerateJwtToken_ValidUser_ReturnsToken()
-        {
-            // Arrange
-            var user = new User
-            {
-                Id = 1,
-                Email = "user@test.com",
-                FirstName = "abc",
-                LastName = "xyz",
-                Role = UserRoles.User
-            };
-
-            // Act
-            var token = _authService.GenerateJwtToken(user);
-
-            // Assert
-            token.Should().NotBeNullOrEmpty();
-        }
-
-        [Fact]
-        public void GenerateJwtToken_MissingConfig_ThrowsException()
-        {
-            // Arrange
-            var user = new User { FirstName = "xyz", LastName = "abc", Email = "abc@mail.com" };
-            _configMock.Setup(x => x["JwtSettings:Secret"]).Returns((string)null);
-
-            // Act & Assert
-            _authService.Invoking(x => x.GenerateJwtToken(user))
-                .Should().Throw<ArgumentNullException>();
-        }
     }
 }
