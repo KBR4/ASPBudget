@@ -28,7 +28,7 @@ namespace ApiUnitTests.Controllers
         {
             // Arrange
             var budgetId = _faker.Random.Int(1, 100);
-            var budgetDto = new BudgetDto { Id = budgetId };
+            var budgetDto = new BudgetDto { Id = budgetId, Name = "budgetname" };
             _budgetServiceMock.Setup(x => x.GetById(budgetId)).ReturnsAsync(budgetDto);
 
             // Act
@@ -60,7 +60,7 @@ namespace ApiUnitTests.Controllers
         public async Task GetAll_WithBudgets_ReturnsOkWithBudgets()
         {
             // Arrange
-            var budgets = new List<BudgetDto> { new BudgetDto { Id = 1 }, new BudgetDto { Id = 2 } };
+            var budgets = new List<BudgetDto> { new BudgetDto { Id = 1, Name = "budgetname1" }, new BudgetDto { Id = 2, Name = "budgetname2" } };
             _budgetServiceMock.Setup(x => x.GetAll()).ReturnsAsync(budgets);
 
             // Act

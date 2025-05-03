@@ -8,6 +8,7 @@ namespace Application.Requests
         public string FirstName { get; set; } = null!;
         public string Email { get; set; }
     }
+
     public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
     {
         public CreateUserRequestValidator()

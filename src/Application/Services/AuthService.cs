@@ -1,4 +1,5 @@
-﻿using Application.Requests;
+﻿using Application.Exceptions;
+using Application.Requests;
 using Application.Responses;
 using AutoMapper;
 using Domain.Entities;
@@ -7,6 +8,7 @@ using Infrastructure.Repositories.UserRepository;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
 
@@ -30,12 +32,12 @@ namespace Application.Services
             var user = await userRepository.ReadByEmail(request.Email);
             if (user == null)
             {
-                throw new UnauthorizedAccessException();
+                throw new InvalidCredentialsException("User with this email doesn't exist");
             }
             var passwordVerified = hasher.VerifyPassword(request.Password, user.PasswordHash);
             if (!passwordVerified)
             {
-                throw new UnauthorizedAccessException();
+                throw new InvalidCredentialsException("Invalid credentials");
             }
             var token = GenerateJwtToken(user);
 

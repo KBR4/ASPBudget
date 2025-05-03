@@ -7,6 +7,7 @@ using Infrastructure.Repositories.UserRepository;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using FluentAssertions;
+using Application.Exceptions;
 
 namespace ApplicationUnitTests.Services
 {
@@ -110,7 +111,7 @@ namespace ApplicationUnitTests.Services
 
             // Act & Assert
             await _authService.Invoking(x => x.Login(request))
-                .Should().ThrowAsync<UnauthorizedAccessException>();
+                .Should().ThrowAsync<InvalidCredentialsException>();
         }
 
         [Fact]
@@ -127,7 +128,7 @@ namespace ApplicationUnitTests.Services
 
             // Act & Assert
             await _authService.Invoking(x => x.Login(request))
-                .Should().ThrowAsync<UnauthorizedAccessException>();
+                .Should().ThrowAsync<InvalidCredentialsException>();
         }
     }
 }

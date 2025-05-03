@@ -68,6 +68,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<InvalidCredentialsExceptionHandler>();
 builder.Services.AddExceptionHandler<DbExceptionHandler>();
 builder.Services.AddExceptionHandler<ApplicationExceptionHandler>(); 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

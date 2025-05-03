@@ -9,6 +9,7 @@ namespace Application.Requests
         public required string Email { get; set; }
         public required string Password { get; set; }
     }
+
     public class RegistrationRequestValidator : AbstractValidator<RegistrationRequest>
     {
         public RegistrationRequestValidator()

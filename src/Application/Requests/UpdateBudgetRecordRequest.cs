@@ -12,6 +12,7 @@ namespace Application.Requests
         public double Total { get; set; }
         public string Comment { get; set; }
     } 
+
     public class UpdateBudgetRecordRequestValidator : AbstractValidator<UpdateBudgetRecordRequest>
     {
         public UpdateBudgetRecordRequestValidator()

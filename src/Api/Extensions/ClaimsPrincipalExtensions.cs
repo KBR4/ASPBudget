@@ -10,6 +10,7 @@ namespace Api.Extensions
             var userIdClaim = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             return int.TryParse(userIdClaim, out var id) ? id : null;
         }
+
         public static UserRoles GetRole(this ClaimsPrincipal principal)
         {
             var roleClaim = principal.FindFirst(ClaimTypes.Role);

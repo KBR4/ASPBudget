@@ -1,4 +1,5 @@
-﻿using Application.Requests;
+﻿using Application.Exceptions;
+using Application.Requests;
 using Application.Services;
 using AutoMapper;
 using Domain.Enums;
@@ -48,7 +49,7 @@ namespace ApplicationIntegrationTests.Services
         }
         
         [Fact]
-        public async Task Login_WithNonexistentEmail_ShouldThrowUnauthorized()
+        public async Task Login_WithNonexistentEmail_ShouldThrowInvalidCredentials()
         {
             // Arrange
             var request = new LoginRequest
@@ -58,7 +59,7 @@ namespace ApplicationIntegrationTests.Services
             };
 
             // Act & Assert
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            await Assert.ThrowsAsync<InvalidCredentialsException>(
                 () => _authService.Login(request));
         }
     }
