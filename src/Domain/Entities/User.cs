@@ -10,5 +10,6 @@ namespace Domain.Entities
         public required string Email { get; set; }
         public string? PasswordHash { get; set; }
         public UserRoles Role { get; set; }
+        public int? LogoAttachmentId { get; set; }
     }
 }
