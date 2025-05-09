@@ -18,6 +18,7 @@ namespace ApplicationUnitTests.Services
         private readonly IMapper _mapper;
         private readonly IUserService _userService;
         private Mock<IUserRepository> _userRepositoryMock;
+        private readonly IAttachmentService _attachmentService;
         private Faker _faker;
         public UserServiceTests()
         {
@@ -30,7 +31,7 @@ namespace ApplicationUnitTests.Services
             var mappingConfig = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _mapper = mappingConfig.CreateMapper();
             var loggerMock = new Mock<ILogger<UserService>>();
-            _userService = new UserService(_userRepository, _mapper, loggerMock.Object);
+            _userService = new UserService(_userRepository, _mapper, loggerMock.Object, _attachmentService);
         }
 
         [Fact]
