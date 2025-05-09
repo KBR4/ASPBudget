@@ -17,6 +17,8 @@ using System.Reflection;
 using MigrationRunner = Infrastructure.Database.MigrationRunner;
 using Bogus.Extensions;
 using Application.Services;
+using Microsoft.AspNetCore.Hosting;
+using Moq;
 
 namespace ApplicationIntegrationTests
 {
@@ -31,6 +33,9 @@ namespace ApplicationIntegrationTests
                 .ConfigureAppConfiguration((context, config) => { config.AddJsonFile("appsettings.json"); })
                 .ConfigureServices((context, services) =>
                 {
+                    var environmentMock = new Mock<IWebHostEnvironment>();
+                    environmentMock.Setup(m => m.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+                    services.AddSingleton(environmentMock.Object);
                     services.AddInfrastructure();
                     services.AddApplication();
 
