@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.Exceptions;
+using Domain.Entities;
 using Infrastructure.Repositories.AttachmentRepository;
 using Microsoft.AspNetCore.Http;
 
@@ -33,7 +34,7 @@ namespace Application.Services
         {
             var attachment = await repository.Get(id);
             if (attachment == null || !fileStorage.FileExists(attachment.StoredPath))
-                throw new FileNotFoundException("Attachment not found");
+                throw new NotFoundApplicationException("Attachment not found");
 
             return await fileStorage.ReadFile(attachment.StoredPath);
         }
@@ -55,7 +56,7 @@ namespace Application.Services
 
             var attachment = await repository.Get(id);
             if (attachment == null)
-                throw new FileNotFoundException("Attachment not found");
+                throw new NotFoundApplicationException("Attachment not found");
 
             var baseUrl = $"{request.Scheme}://{request.Host}";
             return $"{baseUrl}/api/attachments/{id}/download";
