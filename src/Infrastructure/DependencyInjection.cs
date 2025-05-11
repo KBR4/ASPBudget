@@ -9,6 +9,7 @@ using FluentMigrator.Runner;
 using System.Reflection;
 using Dapper;
 using Infrastructure.Database.TypeMappings;
+using Infrastructure.Repositories.AttachmentRepository;
 
 namespace Infrastructure
 {
@@ -33,6 +34,7 @@ namespace Infrastructure
             services.AddTransient<IBudgetRepository, BudgetPostgresRepository>();
             services.AddTransient<IBudgetRecordRepository, BudgetRecordPostgresRepository>();
             services.AddTransient<IBudgetResultRepository, BudgetResultPostgresRepository>();
+            services.AddTransient<IAttachmentRepository, AttachmentPostgresRepository>();
 
             services.AddFluentMigratorCore()
                 .ConfigureRunner(

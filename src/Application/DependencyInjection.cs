@@ -18,6 +18,8 @@ namespace Application
             services.AddTransient<IBudgetResultService, BudgetResultService>();
             services.AddTransient<IPasswordHasher, BCryptHasher>();
             services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<IAttachmentService, AttachmentService>();
+            services.AddTransient<IFileStorageService, FileStorageService>();
 
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();

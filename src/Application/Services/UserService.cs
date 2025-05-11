@@ -13,11 +13,13 @@ namespace Application.Services
         private IUserRepository _userRepository;
         private IMapper _mapper;
         private readonly ILogger<UserService> _logger;
-        public UserService(IUserRepository userRepository, IMapper mapper, ILogger<UserService> logger)
+        private readonly IAttachmentService _attachmentService;
+        public UserService(IUserRepository userRepository, IMapper mapper, ILogger<UserService> logger, IAttachmentService attachmentService)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _logger = logger;
+            _attachmentService = attachmentService;
         }
 
         public async Task Delete(int id)
@@ -45,6 +47,12 @@ namespace Application.Services
                 throw new NotFoundApplicationException("User not found");
             }
             var mappedUser = _mapper.Map<UserDto>(user);
+            if (mappedUser.LogoAttachmentId.HasValue)
+            {
+                var attachmentUrl = await _attachmentService
+                    .GetPublicLinkAsync(mappedUser.LogoAttachmentId.Value);
+                mappedUser.LogoAttachmentUrl = attachmentUrl;
+            }
             return mappedUser;
         }
 
