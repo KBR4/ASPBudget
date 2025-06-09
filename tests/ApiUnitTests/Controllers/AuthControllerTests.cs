@@ -4,9 +4,11 @@ using Application.Responses;
 using Application.Services;
 using Bogus;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Security.Claims;
 
 namespace ApiUnitTests.Controllers
 {
@@ -29,7 +31,7 @@ namespace ApiUnitTests.Controllers
         }
 
         [Fact]
-        public async Task Register_ValidRequest_ReturnsCreatedWithLocationHeader()
+        public async Task Register_ValidRequest_ReturnsCreated()
         {
             // Arrange
             var request = new RegistrationRequest
@@ -39,26 +41,41 @@ namespace ApiUnitTests.Controllers
                 Email = _faker.Internet.Email(),
                 Password = "ValidPass1!"
             };
-            const int userId = 1;
-            _authServiceMock.Setup(x => x.Register(request)).ReturnsAsync(userId);
+
+            var principal = new ClaimsPrincipal(new ClaimsIdentity());
+            _authServiceMock.Setup(x => x.Register(request)).ReturnsAsync(principal);
+
+            // Настраиваем мок для HttpContext и сервисов аутентификации
+            var authServiceMock = new Mock<IAuthenticationService>();
+            authServiceMock
+                .Setup(x => x.SignInAsync(It.IsAny<HttpContext>(), It.IsAny<string>(), It.IsAny<ClaimsPrincipal>(), It.IsAny<AuthenticationProperties>()))
+                .Returns(Task.CompletedTask);
+
+            var serviceProviderMock = new Mock<IServiceProvider>();
+            serviceProviderMock
+                .Setup(x => x.GetService(typeof(IAuthenticationService)))
+                .Returns(authServiceMock.Object);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = serviceProviderMock.Object
+                }
+            };
 
             // Act
             var result = await _controller.Register(request);
 
             // Assert
-            result.Should().BeOfType<CreatedAtActionResult>()
-                .Which.Should().Satisfy<CreatedAtActionResult>(res =>
-                {
-                    res.ActionName.Should().Be(nameof(UserController.GetById));
-                    res.ControllerName.Should().Be("User");
-                    res.RouteValues["id"].Should().Be(userId);
-
-                    var value = res.Value;
-                    value.GetType().GetProperty("Id").Should().NotBeNull();
-                    value.GetType().GetProperty("Id").GetValue(value).Should().Be(userId);
-                });
-
+            result.Should().BeOfType<CreatedResult>();
             _authServiceMock.Verify(x => x.Register(request), Times.Once);
+            authServiceMock.Verify(x => x.SignInAsync(
+                It.IsAny<HttpContext>(),
+                It.IsAny<string>(),
+                principal,
+                It.IsAny<AuthenticationProperties>()),
+                Times.Once);
         }
 
         [Fact]
@@ -82,7 +99,7 @@ namespace ApiUnitTests.Controllers
         }
 
         [Fact]
-        public async Task Login_ValidCredentials_ReturnsOkWithToken()
+        public async Task Login_ValidCredentials_ReturnsOk()
         {
             // Arrange
             var request = new LoginRequest
@@ -90,17 +107,41 @@ namespace ApiUnitTests.Controllers
                 Email = _faker.Internet.Email(),
                 Password = "ValidPass1!"
             };
-            var expectedResponse = new LoginResponse { Token = "test-token" };
-            _authServiceMock.Setup(x => x.Login(request)).ReturnsAsync(expectedResponse);
+
+            var principal = new ClaimsPrincipal(new ClaimsIdentity());
+            _authServiceMock.Setup(x => x.Login(request)).ReturnsAsync(principal);
+
+            // Настраиваем мок для HttpContext и сервисов аутентификации
+            var authServiceMock = new Mock<IAuthenticationService>();
+            authServiceMock
+                .Setup(x => x.SignInAsync(It.IsAny<HttpContext>(), It.IsAny<string>(), It.IsAny<ClaimsPrincipal>(), It.IsAny<AuthenticationProperties>()))
+                .Returns(Task.CompletedTask);
+
+            var serviceProviderMock = new Mock<IServiceProvider>();
+            serviceProviderMock
+                .Setup(x => x.GetService(typeof(IAuthenticationService)))
+                .Returns(authServiceMock.Object);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = serviceProviderMock.Object
+                }
+            };
 
             // Act
             var result = await _controller.Login(request);
 
             // Assert
-            result.Should().BeOfType<OkObjectResult>()
-                .Which.Value.Should().BeEquivalentTo(expectedResponse);
-
+            result.Should().BeOfType<OkResult>();
             _authServiceMock.Verify(x => x.Login(request), Times.Once);
+            authServiceMock.Verify(x => x.SignInAsync(
+                It.IsAny<HttpContext>(),
+                It.IsAny<string>(),
+                principal,
+                It.IsAny<AuthenticationProperties>()),
+                Times.Once);
         }
 
         [Fact]
