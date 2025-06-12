@@ -10,5 +10,6 @@ namespace Application.Services
         public Task<int> Add(CreateBudgetRecordRequest request);
         public Task Update(UpdateBudgetRecordRequest request);
         public Task Delete(int id);
+        public Task<IEnumerable<BudgetRecordDto>> GetByBudgetId(int budgetId);
     }
 }
