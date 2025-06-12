@@ -85,8 +85,8 @@ builder.Services.AddAuthentication("HttponlyAuth")
     .AddCookie("HttponlyAuth", options =>
     {
         options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Allow HTTP in development
+        options.Cookie.SameSite = SameSiteMode.None; // Required for cross-origin with credentials
         options.Cookie.Name = "auth_token";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
     });
@@ -106,7 +106,7 @@ builder.Services.AddCors(
     {
         options.AddPolicy("AllowLocalhost", policy =>
         {
-            policy.WithOrigins("localhost", "http://localhost:3000")
+            policy.WithOrigins("localhost", "http://localhost:3000", "https://localhost:3000")
             .AllowCredentials()
             .AllowAnyMethod()
             .AllowAnyHeader();
