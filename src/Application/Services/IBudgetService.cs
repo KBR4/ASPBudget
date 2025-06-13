@@ -10,5 +10,6 @@ namespace Application.Services
         public Task<int> Add(CreateBudgetRequest request);
         public Task Update(UpdateBudgetRequest request);
         public Task Delete(int id);
+        Task<IEnumerable<BudgetDto>> GetByCreatorId(int creatorId);
     }
 }

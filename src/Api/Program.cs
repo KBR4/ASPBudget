@@ -81,24 +81,14 @@ var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSettings);
 var secret = jwtSettings["Secret"] ?? throw new ArgumentNullException("JwtSettings:Secret");
 
-// Add JWT Authentication
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-    .AddJwtBearer(options =>
+builder.Services.AddAuthentication("HttponlyAuth")
+    .AddCookie("HttponlyAuth", options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret))
-        };
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Allow HTTP in development
+        options.Cookie.SameSite = SameSiteMode.None; // Required for cross-origin with credentials
+        options.Cookie.Name = "auth_token";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
     });
 
 builder.Services.AddRateLimiter(options =>
@@ -110,6 +100,19 @@ builder.Services.AddRateLimiter(options =>
         limiterOptions.PermitLimit = 5; // Max 5 login attempts per minute
     });
 });
+
+builder.Services.AddCors(
+    (options) =>
+    {
+        options.AddPolicy("AllowLocalhost", policy =>
+        {
+            policy.WithOrigins("localhost", "http://localhost:3000", "https://localhost:3000")
+            .AllowCredentials()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+        });
+    }
+);
 
 var app = builder.Build();
 
@@ -127,6 +130,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowLocalhost");
+
 app.UseRateLimiter();
 
 app.UseSerilogRequestLogging();

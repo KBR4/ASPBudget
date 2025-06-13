@@ -76,5 +76,10 @@ namespace Infrastructure.Repositories.BudgetRepository
             budgetToUpdate.CreatorId = budget.CreatorId;
             return Task.FromResult(true);
         }
+
+        public Task<IEnumerable<Budget>> ReadByCreatorId(int creatorId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

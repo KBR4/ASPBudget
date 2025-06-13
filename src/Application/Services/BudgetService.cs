@@ -82,5 +82,12 @@ namespace Application.Services
             }
             _logger.LogInformation(@"User with ID = {0} was updated.", budget.Id);
         }
+
+        public async Task<IEnumerable<BudgetDto>> GetByCreatorId(int creatorId)
+        {
+            var budgets = await _budgetRepository.ReadByCreatorId(creatorId);
+            var mappedBudgets = budgets.Select(q => _mapper.Map<BudgetDto>(q)).ToList();
+            return mappedBudgets;
+        }
     }
 }

@@ -72,5 +72,10 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
             budgetRecordToUpdate.Comment = budgetRecord.Comment;
             return Task.FromResult(true);
         }
+
+        public Task<IEnumerable<BudgetRecord>> ReadByBudgetId(int budgetId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -55,5 +55,14 @@ namespace Infrastructure.Repositories.BudgetRepository
 
             return affectedRows > 0;
         }
+
+        public async Task<IEnumerable<Budget>> ReadByCreatorId(int creatorId)
+        {
+            var budgets = await _connection.QueryAsync<Budget>(
+                @"SELECT id, name, start_date, finish_date, description, creator_id 
+                  FROM budgets 
+                  WHERE creator_id = @CreatorId", new { CreatorId = creatorId });
+            return budgets.ToList();
+        }
     }
 }

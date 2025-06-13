@@ -57,5 +57,15 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
 
             return affectedRows > 0;
         }
+
+        public async Task<IEnumerable<BudgetRecord>> ReadByBudgetId(int budgetId)
+        {
+            var budgetRecords = await _connection.QueryAsync<BudgetRecord>(
+                @"SELECT id, name, creation_date, spending_date, budget_id, total, comment 
+          FROM budgetRecords 
+          WHERE budget_id = @BudgetId",
+                new { BudgetId = budgetId });
+            return budgetRecords.ToList();
+        }
     }
 }

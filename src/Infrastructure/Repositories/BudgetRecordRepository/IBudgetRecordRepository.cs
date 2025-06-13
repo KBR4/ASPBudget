@@ -9,5 +9,6 @@ namespace Infrastructure.Repositories.BudgetRecordRepository
         public Task<int> Create(BudgetRecord budgetRecord);
         public Task<bool> Update(BudgetRecord budgetRecord);
         public Task<bool> Delete(int id);
+        public Task<IEnumerable<BudgetRecord>> ReadByBudgetId(int budgetId);
     }
 }

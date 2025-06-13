@@ -59,7 +59,7 @@ namespace ApplicationIntegrationTests.Services
             };
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidCredentialsException>(
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(
                 () => _authService.Login(request));
         }
     }

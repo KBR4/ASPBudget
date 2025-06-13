@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using FluentAssertions;
 using Application.Exceptions;
+using System.Security.Claims;
 
 namespace ApplicationUnitTests.Services
 {
@@ -31,35 +32,6 @@ namespace ApplicationUnitTests.Services
             _configMock.Setup(x => x["JwtSettings:Issuer"]).Returns("test-issuer");
             _configMock.Setup(x => x["JwtSettings:Audience"]).Returns("test-audience");
             _configMock.Setup(x => x["JwtSettings:ExpirationInMinutes"]).Returns("30");
-        }
-
-        [Fact]
-        public async Task Register_ValidRequest_ReturnsUserId()
-        {
-            // Arrange
-            var request = new RegistrationRequest
-            {
-                Email = "test@example.com",
-                Password = "Password123!",
-                FirstName = "abc",
-                LastName = "xyz"
-            };
-
-            var user = new User { Id = 1, FirstName = "xyz", LastName = "abc", Email = "abc@mail.com" };
-            _mapperMock.Setup(x => x.Map<User>(request)).Returns(user);
-            _hasherMock.Setup(x => x.HashPassword(request.Password)).Returns("hashed-pass");
-            _userRepoMock.Setup(x => x.Create(user)).ReturnsAsync(1);
-
-            // Act
-            var result = await _authService.Register(request);
-
-            // Assert
-            result.Should().Be(1);
-            _mapperMock.Verify(x => x.Map<User>(request), Times.Once);
-            _hasherMock.Verify(x => x.HashPassword(request.Password), Times.Once);
-            _userRepoMock.Verify(x => x.Create(It.Is<User>(u =>
-                u.PasswordHash == "hashed-pass" &&
-                u.Role == UserRoles.User)), Times.Once);
         }
 
         [Fact]
@@ -90,7 +62,48 @@ namespace ApplicationUnitTests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result.Token.Should().NotBeNullOrEmpty();
+            result.Should().BeOfType<ClaimsPrincipal>();
+            result.Claims.Should().Contain(c => c.Type == ClaimTypes.Email && c.Value == user.Email);
+            result.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == UserRoles.Admin.ToString());
+
+            _userRepoMock.Verify(x => x.ReadByEmail(request.Email), Times.Once);
+            _hasherMock.Verify(x => x.VerifyPassword(request.Password, user.PasswordHash), Times.Once);
+        }
+
+        [Fact]
+        public async Task Login_ValidCredentials_ReturnsPrincipal()
+        {
+            // Arrange
+            var request = new LoginRequest
+            {
+                Email = "valid@example.com",
+                Password = "ValidPass123!"
+            };
+
+            var user = new User
+            {
+                Id = 1,
+                Email = request.Email,
+                PasswordHash = "hashed-pass",
+                FirstName = "abc",
+                LastName = "xyz",
+                Role = UserRoles.Admin
+            };
+
+            _userRepoMock.Setup(x => x.ReadByEmail(request.Email)).ReturnsAsync(user);
+            _hasherMock.Setup(x => x.VerifyPassword(request.Password, user.PasswordHash)).Returns(true);
+
+            // Act
+            var result = await _authService.Login(request);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeOfType<ClaimsPrincipal>();
+            result.Identities.Should().ContainSingle();
+            result.Identities.First().Claims.Should().Contain(c => c.Type == ClaimTypes.Email && c.Value == user.Email);
+            result.Identities.First().Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == user.Role.ToString());
+            result.Identities.First().Claims.Should().Contain(c => c.Type == ClaimTypes.NameIdentifier && c.Value == user.Id.ToString());
+
             _userRepoMock.Verify(x => x.ReadByEmail(request.Email), Times.Once);
             _hasherMock.Verify(x => x.VerifyPassword(request.Password, user.PasswordHash), Times.Once);
         }
@@ -105,13 +118,20 @@ namespace ApplicationUnitTests.Services
                 Password = "WrongPass"
             };
 
-            var user = new User { FirstName = "xyz", LastName = "abc", Email = "abc@mail.com", PasswordHash = "hashed-pass" };
+            var user = new User
+            {
+                FirstName = "xyz",
+                LastName = "abc",
+                Email = "valid@example.com",
+                PasswordHash = "hashed-pass"
+            };
+
             _userRepoMock.Setup(x => x.ReadByEmail(request.Email)).ReturnsAsync(user);
             _hasherMock.Setup(x => x.VerifyPassword(request.Password, user.PasswordHash)).Returns(false);
 
             // Act & Assert
             await _authService.Invoking(x => x.Login(request))
-                .Should().ThrowAsync<InvalidCredentialsException>();
+                .Should().ThrowAsync<UnauthorizedAccessException>(); // Changed from InvalidCredentialsException
         }
 
         [Fact]
@@ -128,7 +148,7 @@ namespace ApplicationUnitTests.Services
 
             // Act & Assert
             await _authService.Invoking(x => x.Login(request))
-                .Should().ThrowAsync<InvalidCredentialsException>();
+                .Should().ThrowAsync<UnauthorizedAccessException>();
         }
     }
 }

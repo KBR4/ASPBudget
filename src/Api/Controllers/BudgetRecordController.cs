@@ -51,5 +51,12 @@ namespace Api.Controllers
             await _budgetRecordService.Delete(id);
             return NoContent();
         }
+
+        [HttpGet("budget/{budgetId}")]
+        public async Task<IActionResult> GetByBudgetId(int budgetId)
+        {
+            var budgetRecords = await _budgetRecordService.GetByBudgetId(budgetId);
+            return Ok(budgetRecords);
+        }
     }
 }

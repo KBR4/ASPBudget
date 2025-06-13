@@ -84,5 +84,13 @@ namespace Application.Services
             }
             _logger.LogInformation(@"BudgetRecord with ID = {0} was updated.", budgetRecord.Id);
         }
+
+        public async Task<IEnumerable<BudgetRecordDto>> GetByBudgetId(int budgetId)
+        {
+            var budgetRecords = await _budgetRecordRepository.ReadByBudgetId(budgetId);
+            var mappedBudgetRecords = budgetRecords.Select(q => _mapper.Map<BudgetRecordDto>(q)).ToList();
+            _logger.LogInformation(@"Retrieved {0} budget records for budget ID = {1}.", mappedBudgetRecords.Count, budgetId);
+            return mappedBudgetRecords;
+        }
     }
 }

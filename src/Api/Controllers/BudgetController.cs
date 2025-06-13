@@ -2,6 +2,7 @@
 using Application.Dtos;
 using Application.Services;
 using Application.Requests;
+using System.Security.Claims;
 
 namespace Api.Controllers
 {
@@ -50,6 +51,20 @@ namespace Api.Controllers
         {
             await _budgetService.Delete(id);
             return NoContent();
+        }
+
+        [HttpGet("user")]
+        public async Task<IActionResult> GetUserBudgets()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized("User ID not found in token");
+            }
+
+            var budgets = await _budgetService.GetByCreatorId(userId);
+            return Ok(budgets);
         }
     }
 }
